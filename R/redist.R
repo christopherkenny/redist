@@ -906,19 +906,23 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
         }
         
     }
+    cat("End loops.\n")
 
     ####################
     ## Annealing flag ##
     ####################
+    cat("Create temperflag,\n")
     temperflag <- ifelse(preprocout$params$temperbetapop == 1 |
                              preprocout$params$temperbetacompact == 1 |
                                  preprocout$params$temperbetaseg == 1 |
                                      preprocout$params$temperbetasimilar == 1,
                          1, 0)
+    cat("Edn temperflag\n")
 
     ###############################
     ## Combine and save the data ##
     ###############################
+    cat("Begin combine.\n")
     if(nloop > 1){
         redist.combine(savename = savename, nsims = nsims, nloop = nloop,
                        nthin = nthin, nunits = length(preprocout$data$adjlist),
@@ -926,9 +930,11 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
     }else if(!is.null(savename)){
         save(algout, file = paste(savename, ".RData", sep = ""))
     }
+    cat("End combine.\n")
 
     ## Examine the data
     if(nloop == 1){
+        cat("Enter return.\n")
         return(algout)
     }
 
