@@ -578,34 +578,22 @@ List swMH(List aList,
   NumericVector dist_orig_vec = diff_origcds(cd_store, cdorigvec);
   
   // Create list, store outputx
-  List out;
-  out["partitions"] = cd_store;
-  out["distance_parity"] = dist_parity_vec;
-  out["distance_original"] = dist_orig_vec;
-  out["mhdecisions"] = decision_store;
-  out["mhprob"] = mhprob_store;
-  out["pparam"] = pparam_store;
-  out["beta_sequence"] = betaseq_store;
-  out["constraint_pop"] = psipop_store;
-  out["constraint_compact"] = psicompact_store;
-  out["constraint_segregation"] = psisegregation_store;
-  out["constraint_similar"] = psisimilar_store;
-  out["boundary_partitions"] = boundarypartitions_store;
-  out["boundaryratio"] = boundaryratio_store;
-  if((anneal_beta_population == 1) || (anneal_beta_compact == 1) ||
-     (anneal_beta_segregation == 1) || (anneal_beta_similar == 1)){
-    out["mhdecisions_beta"] = decision_betaseq_store;
-    out["mhprob_beta"] = mhprob_betaseq_store;
-  }
-  if(adapt_eprob == 1){
-    out["final_eprob"] = eprob;
-  }
-  if(adapt_lambda == 1){
-    out["final_lambda"] = lambda;
-  }
-  Rcpp::Rcout << "end store everything" << std::endl;
-  
-  return out;
+  return Rcpp::List::create(Rcpp::Named("partitions") = cd_store,
+			    Rcpp::Named("distance_parity") = dist_parity_vec,
+			    Rcpp::Named("distance_original") = dist_orig_vec,
+			    Rcpp::Named("mhdecisions") = decision_store,
+			    Rcpp::Named("mhprob") = mhprob_store,
+			    Rcpp::Named("pparam") = pparam_store,
+			    Rcpp::Named("beta_sequence") = betaseq_store,
+			    Rcpp::Named("constraint_pop") = psipop_store,
+			    Rcpp::Named("constraint_compact") = psicompact_store,
+			    Rcpp::Named("constraint_segregation") = psisegregation_store,
+			    Rcpp::Named("constraint_similar") = psisimilar_store,
+			    Rcpp::Named("boundary_partitions") = boundarypartitions_store,
+			    Rcpp::Named("mhdecisions_beta") = decision_betaseq_store,
+			    Rcpp::Named("mhprob_beta") = mhprob_betaseq_store,
+			    Rcpp::Named("final_eprob") = eprob,
+			    Rcpp::Named("final_lambda") = lambda);
   
 }
 
