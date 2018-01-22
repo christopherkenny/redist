@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // cppGeneratePartitions
 List cppGeneratePartitions(List adjList, int numBlocks, NumericVector popSizes, int numConstraintLow, int numConstraintHigh, double popConstraintLow, double popConstraintHigh);
-RcppExport SEXP redist_cppGeneratePartitions(SEXP adjListSEXP, SEXP numBlocksSEXP, SEXP popSizesSEXP, SEXP numConstraintLowSEXP, SEXP numConstraintHighSEXP, SEXP popConstraintLowSEXP, SEXP popConstraintHighSEXP) {
+RcppExport SEXP _redist_cppGeneratePartitions(SEXP adjListSEXP, SEXP numBlocksSEXP, SEXP popSizesSEXP, SEXP numConstraintLowSEXP, SEXP numConstraintHighSEXP, SEXP popConstraintLowSEXP, SEXP popConstraintHighSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -25,7 +25,7 @@ END_RCPP
 }
 // countpartitions
 int countpartitions(List aList);
-RcppExport SEXP redist_countpartitions(SEXP aListSEXP) {
+RcppExport SEXP _redist_countpartitions(SEXP aListSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -36,7 +36,7 @@ END_RCPP
 }
 // calcPWDh
 NumericMatrix calcPWDh(NumericMatrix x);
-RcppExport SEXP redist_calcPWDh(SEXP xSEXP) {
+RcppExport SEXP _redist_calcPWDh(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -47,7 +47,7 @@ END_RCPP
 }
 // segregationcalc
 NumericVector segregationcalc(NumericMatrix distmat, NumericVector grouppop, NumericVector fullpop);
-RcppExport SEXP redist_segregationcalc(SEXP distmatSEXP, SEXP grouppopSEXP, SEXP fullpopSEXP) {
+RcppExport SEXP _redist_segregationcalc(SEXP distmatSEXP, SEXP grouppopSEXP, SEXP fullpopSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -60,7 +60,7 @@ END_RCPP
 }
 // rsg
 List rsg(List adj_list, NumericVector population, int Ndistrict, double target_pop, double thresh, int maxiter);
-RcppExport SEXP redist_rsg(SEXP adj_listSEXP, SEXP populationSEXP, SEXP NdistrictSEXP, SEXP target_popSEXP, SEXP threshSEXP, SEXP maxiterSEXP) {
+RcppExport SEXP _redist_rsg(SEXP adj_listSEXP, SEXP populationSEXP, SEXP NdistrictSEXP, SEXP target_popSEXP, SEXP threshSEXP, SEXP maxiterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -76,7 +76,7 @@ END_RCPP
 }
 // swMH
 List swMH(List aList, NumericVector cdvec, NumericVector cdorigvec, NumericVector popvec, NumericVector grouppopvec, int nsims, double eprob, double pct_dist_parity, NumericVector beta_sequence, NumericVector beta_weights, NumericMatrix ssdmat, int lambda, double beta_population, double beta_compact, double beta_segregation, double beta_similar, int anneal_beta_population, int anneal_beta_compact, int anneal_beta_segregation, int anneal_beta_similar, int adjswap, int exact_mh, int adapt_eprob, int adapt_lambda);
-RcppExport SEXP redist_swMH(SEXP aListSEXP, SEXP cdvecSEXP, SEXP cdorigvecSEXP, SEXP popvecSEXP, SEXP grouppopvecSEXP, SEXP nsimsSEXP, SEXP eprobSEXP, SEXP pct_dist_paritySEXP, SEXP beta_sequenceSEXP, SEXP beta_weightsSEXP, SEXP ssdmatSEXP, SEXP lambdaSEXP, SEXP beta_populationSEXP, SEXP beta_compactSEXP, SEXP beta_segregationSEXP, SEXP beta_similarSEXP, SEXP anneal_beta_populationSEXP, SEXP anneal_beta_compactSEXP, SEXP anneal_beta_segregationSEXP, SEXP anneal_beta_similarSEXP, SEXP adjswapSEXP, SEXP exact_mhSEXP, SEXP adapt_eprobSEXP, SEXP adapt_lambdaSEXP) {
+RcppExport SEXP _redist_swMH(SEXP aListSEXP, SEXP cdvecSEXP, SEXP cdorigvecSEXP, SEXP popvecSEXP, SEXP grouppopvecSEXP, SEXP nsimsSEXP, SEXP eprobSEXP, SEXP pct_dist_paritySEXP, SEXP beta_sequenceSEXP, SEXP beta_weightsSEXP, SEXP ssdmatSEXP, SEXP lambdaSEXP, SEXP beta_populationSEXP, SEXP beta_compactSEXP, SEXP beta_segregationSEXP, SEXP beta_similarSEXP, SEXP anneal_beta_populationSEXP, SEXP anneal_beta_compactSEXP, SEXP anneal_beta_segregationSEXP, SEXP anneal_beta_similarSEXP, SEXP adjswapSEXP, SEXP exact_mhSEXP, SEXP adapt_eprobSEXP, SEXP adapt_lambdaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -110,7 +110,7 @@ END_RCPP
 }
 // genAlConn
 List genAlConn(List aList, NumericVector cds);
-RcppExport SEXP redist_genAlConn(SEXP aListSEXP, SEXP cdsSEXP) {
+RcppExport SEXP _redist_genAlConn(SEXP aListSEXP, SEXP cdsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -122,7 +122,7 @@ END_RCPP
 }
 // findBoundary
 NumericVector findBoundary(List fullList, List conList);
-RcppExport SEXP redist_findBoundary(SEXP fullListSEXP, SEXP conListSEXP) {
+RcppExport SEXP _redist_findBoundary(SEXP fullListSEXP, SEXP conListSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;

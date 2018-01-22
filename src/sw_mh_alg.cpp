@@ -93,6 +93,9 @@ List swMH(List aList,
 
    */
 
+  Rcpp::Rcout << "In swMH()" << std::endl;
+
+  Rcpp::Rcout << "Start preproc" << std::endl;
   // Preprocess vector of congressional district assignments
   if(min(cdvec) == 1){
     for(int i = 0; i < cdvec.size(); i++){
@@ -207,22 +210,27 @@ List swMH(List aList,
   NumericVector boundary_prop; List boundary_partitions_prop; int decision;
   List get_constraint; List gt_out; NumericVector cdvec_prop; int i;
 
+  Rcpp::Rcout << "End preproc" << std::endl;
+
   // Open the simulations
   while(k < nsims){
 
     /////////////////////////////////////
     // First: determine boundary cases //
     /////////////////////////////////////
+    Rcpp::Rcout << "Determine boundary cases" << std::endl;
     // Modify aList list for connected components within cd
     aList_con = genAlConn(aList, cdvec);
 
     // Get vector of boundary units
     boundary = findBoundary(aList, aList_con);
+    Rcpp::Rcout << "End Determine boundary cases" << std::endl;
 
     ///////////////////////////////////////////////////////////////////////////
     // Second: within each congressional district, turn on edges with pr = p //
     ///////////////////////////////////////////////////////////////////////////
     // Continue trying until you get p good swaps
+    Rcpp::Rcout << "turn on edges" << std::endl;
     do{
       
       // First element is connected adjlist, second element is cut adjlist
@@ -262,6 +270,7 @@ List swMH(List aList,
 				   ssd_denom);
 
     }while(as<int>(swap_partitions["goodprop"]) == 0);
+    Rcpp::Rcout << "End turn on edges" << std::endl;
     
     // Get new boundary, then get number of partitions
     if(exact_mh == 1){
@@ -284,11 +293,14 @@ List swMH(List aList,
     //////////////////////////////////////////
     // Fifth - Accept with some probability //
     //////////////////////////////////////////
+    Rcpp::Rcout << "Accept proposal" << std::endl;
     decision = mh_decision(as<double>(swap_partitions["mh_prob"]));
+    Rcpp::Rcout << "End Accept proposal" << std::endl;
   
     /////////////////////////////////////////////////////////////
     // Also - for simulated tempering, propose a possible swap //
     /////////////////////////////////////////////////////////////
+    Rcpp::Rcout << "Propose swap for ST" << std::endl;
     if((anneal_beta_population == 1) || (beta_population != 0.0)){ // If constraining, get constraints
       get_constraint = calc_betapop(cdvec,
 				    as<NumericVector>(swap_partitions["proposed_partition"]),
@@ -484,9 +496,11 @@ List swMH(List aList,
       }
 
     }
+    Rcpp::Rcout << "End Propose swap for ST" << std::endl;
     //////////////////////////////////////
     // Six = clean up and store results //
     //////////////////////////////////////
+    Rcpp::Rcout << "clean up" << std::endl;
     cdvec_prop = clone(as<NumericVector>(swap_partitions["proposed_partition"]));
     if(decision == 1){
       // Update cds to proposed cds
@@ -550,6 +564,8 @@ List swMH(List aList,
 	}
       }
     }
+
+    Rcpp::Rcout << "End clean up" << std::endl;
         
   }
   
