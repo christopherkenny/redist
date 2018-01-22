@@ -576,6 +576,7 @@ List swMH(List aList,
   NumericVector dist_parity_vec = distParity(cd_store, popvec);
 
   NumericVector dist_orig_vec = diff_origcds(cd_store, cdorigvec);
+  Rcpp::Rcout << "end store everything" << std::endl;
   
   // Create list, store outputx
   return Rcpp::List::create(Rcpp::Named("partitions") = cd_store,
