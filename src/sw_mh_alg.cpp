@@ -213,25 +213,21 @@ List swMH(List aList,
   Rcpp::Rcout << "End preproc" << std::endl;
 
   // Open the simulations
-  Rcpp::Rcout << "start simulations" << std::endl;
   while(k < nsims){
 
     /////////////////////////////////////
     // First: determine boundary cases //
     /////////////////////////////////////
-    Rcpp::Rcout << "Determine boundary cases" << std::endl;
     // Modify aList list for connected components within cd
     aList_con = genAlConn(aList, cdvec);
 
     // Get vector of boundary units
     boundary = findBoundary(aList, aList_con);
-    Rcpp::Rcout << "End Determine boundary cases" << std::endl;
 
     ///////////////////////////////////////////////////////////////////////////
     // Second: within each congressional district, turn on edges with pr = p //
     ///////////////////////////////////////////////////////////////////////////
     // Continue trying until you get p good swaps
-    Rcpp::Rcout << "turn on edges" << std::endl;
     do{
       
       // First element is connected adjlist, second element is cut adjlist
@@ -271,7 +267,6 @@ List swMH(List aList,
 				   ssd_denom);
 
     }while(as<int>(swap_partitions["goodprop"]) == 0);
-    Rcpp::Rcout << "End turn on edges" << std::endl;
     
     // Get new boundary, then get number of partitions
     if(exact_mh == 1){
@@ -294,14 +289,11 @@ List swMH(List aList,
     //////////////////////////////////////////
     // Fifth - Accept with some probability //
     //////////////////////////////////////////
-    Rcpp::Rcout << "Accept proposal" << std::endl;
     decision = mh_decision(as<double>(swap_partitions["mh_prob"]));
-    Rcpp::Rcout << "End Accept proposal" << std::endl;
   
     /////////////////////////////////////////////////////////////
     // Also - for simulated tempering, propose a possible swap //
     /////////////////////////////////////////////////////////////
-    Rcpp::Rcout << "Propose swap for ST" << std::endl;
     if((anneal_beta_population == 1) || (beta_population != 0.0)){ // If constraining, get constraints
       get_constraint = calc_betapop(cdvec,
 				    as<NumericVector>(swap_partitions["proposed_partition"]),
@@ -497,11 +489,9 @@ List swMH(List aList,
       }
 
     }
-    Rcpp::Rcout << "End Propose swap for ST" << std::endl;
     //////////////////////////////////////
     // Six = clean up and store results //
     //////////////////////////////////////
-    Rcpp::Rcout << "clean up" << std::endl;
     cdvec_prop = clone(as<NumericVector>(swap_partitions["proposed_partition"]));
     if(decision == 1){
       // Update cds to proposed cds
@@ -565,8 +555,6 @@ List swMH(List aList,
 	}
       }
     }
-
-    Rcpp::Rcout << "End clean up" << std::endl;
         
   }
   Rcpp::Rcout << "End simulations" << std::endl;
