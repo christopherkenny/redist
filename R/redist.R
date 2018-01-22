@@ -866,6 +866,7 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
         }        
 
         ## Run algorithm
+        cat("Start swMH\n")
         algout <- swMH(aList = preprocout$data$adjlist,
                        cdvec = cds,
                        cdorigvec = preprocout$data$initcds,
@@ -890,6 +891,7 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
                        exact_mh = exact_mh,
                        adapt_lambda = adapt_lambda,
                        adapt_eprob = adapt_eprob)
+        cat("End swMH\n")
 
         class(algout) <- "redist"
 
