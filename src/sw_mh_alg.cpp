@@ -93,9 +93,6 @@ List swMH(List aList,
 
    */
 
-  Rcpp::Rcout << "In swMH()" << std::endl;
-
-  Rcpp::Rcout << "Start preproc" << std::endl;
   // Preprocess vector of congressional district assignments
   if(min(cdvec) == 1){
     for(int i = 0; i < cdvec.size(); i++){
@@ -209,8 +206,6 @@ List swMH(List aList,
   List boundary_partitions; List cutedge_lists; int p; List aList_con_prop;
   NumericVector boundary_prop; List boundary_partitions_prop; int decision;
   List get_constraint; List gt_out; NumericVector cdvec_prop; int i;
-
-  Rcpp::Rcout << "End preproc" << std::endl;
 
   // Open the simulations
   while(k < nsims){
@@ -557,32 +552,29 @@ List swMH(List aList,
     }
         
   }
-  Rcpp::Rcout << "End simulations" << std::endl;
   
   // Get distance from parity of each partition
-  Rcpp::Rcout << "store everything" << std::endl;
   NumericVector dist_parity_vec = distParity(cd_store, popvec);
 
   NumericVector dist_orig_vec = diff_origcds(cd_store, cdorigvec);
-  Rcpp::Rcout << "end store everything" << std::endl;
   
   // Create list, store outputx
   return Rcpp::List::create(Rcpp::Named("partitions") = cd_store,
 			    Rcpp::Named("distance_parity") = dist_parity_vec,
-			    // Rcpp::Named("distance_original") = dist_orig_vec,
-			    // Rcpp::Named("mhdecisions") = decision_store,
-			    // Rcpp::Named("mhprob") = mhprob_store,
-			    // Rcpp::Named("pparam") = pparam_store,
+			    Rcpp::Named("distance_original") = dist_orig_vec,
+			    Rcpp::Named("mhdecisions") = decision_store,
+			    Rcpp::Named("mhprob") = mhprob_store,
+			    Rcpp::Named("pparam") = pparam_store,
 			    Rcpp::Named("beta_sequence") = betaseq_store,
 			    Rcpp::Named("constraint_pop") = psipop_store// ,
-			    // Rcpp::Named("constraint_compact") = psicompact_store,
-			    // Rcpp::Named("constraint_segregation") = psisegregation_store,
-			    // Rcpp::Named("constraint_similar") = psisimilar_store,
-			    // Rcpp::Named("boundary_partitions") = boundarypartitions_store,
-			    // Rcpp::Named("mhdecisions_beta") = decision_betaseq_store,
-			    // Rcpp::Named("mhprob_beta") = mhprob_betaseq_store,
-			    // Rcpp::Named("final_eprob") = eprob,
-			    // Rcpp::Named("final_lambda") = lambda
+l			    Rcpp::Named("constraint_compact") = psicompact_store,
+			    Rcpp::Named("constraint_segregation") = psisegregation_store,
+			    Rcpp::Named("constraint_similar") = psisimilar_store,
+			    Rcpp::Named("boundary_partitions") = boundarypartitions_store,
+			    Rcpp::Named("mhdecisions_beta") = decision_betaseq_store,
+			    Rcpp::Named("mhprob_beta") = mhprob_betaseq_store,
+			    Rcpp::Named("final_eprob") = eprob,
+			    Rcpp::Named("final_lambda") = lambda
 			    );
   
 }
