@@ -581,20 +581,21 @@ List swMH(List aList,
   // Create list, store outputx
   return Rcpp::List::create(Rcpp::Named("partitions") = cd_store,
 			    Rcpp::Named("distance_parity") = dist_parity_vec,
-			    Rcpp::Named("distance_original") = dist_orig_vec,
-			    Rcpp::Named("mhdecisions") = decision_store,
-			    Rcpp::Named("mhprob") = mhprob_store,
-			    Rcpp::Named("pparam") = pparam_store,
+			    // Rcpp::Named("distance_original") = dist_orig_vec,
+			    // Rcpp::Named("mhdecisions") = decision_store,
+			    // Rcpp::Named("mhprob") = mhprob_store,
+			    // Rcpp::Named("pparam") = pparam_store,
 			    Rcpp::Named("beta_sequence") = betaseq_store,
-			    Rcpp::Named("constraint_pop") = psipop_store,
-			    Rcpp::Named("constraint_compact") = psicompact_store,
-			    Rcpp::Named("constraint_segregation") = psisegregation_store,
-			    Rcpp::Named("constraint_similar") = psisimilar_store,
-			    Rcpp::Named("boundary_partitions") = boundarypartitions_store,
-			    Rcpp::Named("mhdecisions_beta") = decision_betaseq_store,
-			    Rcpp::Named("mhprob_beta") = mhprob_betaseq_store,
-			    Rcpp::Named("final_eprob") = eprob,
-			    Rcpp::Named("final_lambda") = lambda);
+			    Rcpp::Named("constraint_pop") = psipop_store// ,
+			    // Rcpp::Named("constraint_compact") = psicompact_store,
+			    // Rcpp::Named("constraint_segregation") = psisegregation_store,
+			    // Rcpp::Named("constraint_similar") = psisimilar_store,
+			    // Rcpp::Named("boundary_partitions") = boundarypartitions_store,
+			    // Rcpp::Named("mhdecisions_beta") = decision_betaseq_store,
+			    // Rcpp::Named("mhprob_beta") = mhprob_betaseq_store,
+			    // Rcpp::Named("final_eprob") = eprob,
+			    // Rcpp::Named("final_lambda") = lambda
+			    );
   
 }
 
