@@ -213,6 +213,7 @@ List swMH(List aList,
   Rcpp::Rcout << "End preproc" << std::endl;
 
   // Open the simulations
+  Rcpp::Rcout << "start simulations" << std::endl;
   while(k < nsims){
 
     /////////////////////////////////////
@@ -568,8 +569,10 @@ List swMH(List aList,
     Rcpp::Rcout << "End clean up" << std::endl;
         
   }
+  Rcpp::Rcout << "End simulations" << std::endl;
   
   // Get distance from parity of each partition
+  Rcpp::Rcout << "store everything" << std::endl;
   NumericVector dist_parity_vec = distParity(cd_store, popvec);
 
   NumericVector dist_orig_vec = diff_origcds(cd_store, cdorigvec);
@@ -600,6 +603,7 @@ List swMH(List aList,
   if(adapt_lambda == 1){
     out["final_lambda"] = lambda;
   }
+  Rcpp::Rcout << "end store everything" << std::endl;
   
   return out;
   
