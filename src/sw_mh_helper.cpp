@@ -544,6 +544,10 @@ List make_swaps(List boundary_cc,
   int breakp = 0; 
   int numaccept = 0;
   int goodprop = 0;
+
+  // Shattering indicator
+  int shatter = 0;
+  int adj = 0;
   
   // Begin loop over p
   for(int i = 0; i < p; i++){
@@ -573,6 +577,7 @@ List make_swaps(List boundary_cc,
       // If adjacent to already-accepted unit, then invalid - return to top
       int adjcheck = as<int>(adjcheck_out["adjacency_check"]);
       if(adjcheck == 1){
+	adj++;
 	continue;
       }
 
@@ -598,6 +603,7 @@ List make_swaps(List boundary_cc,
       // Get number of connected components
       int num_cds = countpartitions(aList_testsplit);
       if(num_cds != ndists){
+	shatter++;
 	continue;
       }
       
@@ -749,6 +755,8 @@ List make_swaps(List boundary_cc,
   out["mh_prob"] = mh_prob;
   out["updated_cd_pops"] = cdspop_prop;
   out["goodprop"] = goodprop;
+  out["num_shattered"] = shatter;
+  out["num_adjacent"] = adj;
   
   return out;
   

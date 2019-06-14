@@ -206,6 +206,7 @@ List swMH(List aList,
   List boundary_partitions; List cutedge_lists; int p; List aList_con_prop;
   NumericVector boundary_prop; List boundary_partitions_prop; int decision;
   List get_constraint; List gt_out; NumericVector cdvec_prop; int i;
+  NumericVector num_shatter(nsims); NumericVector num_adj(nsims);
 
   // Open the simulations
   while(k < nsims){
@@ -510,6 +511,18 @@ List swMH(List aList,
     // Store the decision
     decision_store[k] = decision;
     decision_counter += decision;
+
+    // Note if a shattering proposal occurs
+    if(as<int>(swap_partitions["num_shattered"]) > 0){
+      num_shatter[k] = 1;
+    }else{
+      num_shatter[k] = 0;
+    }
+    if(as<int>(swap_partitions["num_adjacent"]) > 0){
+      num_adj[k] = 1;
+    }else{
+      num_adj[k] = 0;
+    }
     
     mhprob_store[k] = as<double>(swap_partitions["mh_prob"]);
 
@@ -573,6 +586,8 @@ List swMH(List aList,
   out["constraint_similar"] = psisimilar_store;
   out["boundary_partitions"] = boundarypartitions_store;
   out["boundaryratio"] = boundaryratio_store;
+  out["shatter_count"] = num_shatter;
+  out["adjacent_count"] = num_adj;
   if((anneal_beta_population == 1) || (anneal_beta_compact == 1) ||
      (anneal_beta_segregation == 1) || (anneal_beta_similar == 1)){
     out["mhdecisions_beta"] = decision_betaseq_store;
