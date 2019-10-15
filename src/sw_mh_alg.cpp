@@ -518,11 +518,7 @@ List swMH(List aList,
     }else{
       num_shatter[k] = 0;
     }
-    if(as<int>(swap_partitions["num_adjacent"]) > 0){
-      num_adj[k] = 1;
-    }else{
-      num_adj[k] = 0;
-    }
+    num_adj[k] = as<int>(swap_partitions["num_adjacent"]);
     
     mhprob_store[k] = as<double>(swap_partitions["mh_prob"]);
 
