@@ -2,13 +2,38 @@
 // Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #include <RcppArmadillo.h>
+#include <RcppEigen.h>
 #include <Rcpp.h>
 
 using namespace Rcpp;
 
+// genAlConn
+List genAlConn(List aList, NumericVector cds);
+RcppExport SEXP _redist_genAlConn(SEXP aListSEXP, SEXP cdsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type aList(aListSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type cds(cdsSEXP);
+    rcpp_result_gen = Rcpp::wrap(genAlConn(aList, cds));
+    return rcpp_result_gen;
+END_RCPP
+}
+// findBoundary
+NumericVector findBoundary(List fullList, List conList);
+RcppExport SEXP _redist_findBoundary(SEXP fullListSEXP, SEXP conListSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type fullList(fullListSEXP);
+    Rcpp::traits::input_parameter< List >::type conList(conListSEXP);
+    rcpp_result_gen = Rcpp::wrap(findBoundary(fullList, conList));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cppGeneratePartitions
 List cppGeneratePartitions(List adjList, int numBlocks, NumericVector popSizes, int numConstraintLow, int numConstraintHigh, double popConstraintLow, double popConstraintHigh);
-RcppExport SEXP redist_cppGeneratePartitions(SEXP adjListSEXP, SEXP numBlocksSEXP, SEXP popSizesSEXP, SEXP numConstraintLowSEXP, SEXP numConstraintHighSEXP, SEXP popConstraintLowSEXP, SEXP popConstraintHighSEXP) {
+RcppExport SEXP _redist_cppGeneratePartitions(SEXP adjListSEXP, SEXP numBlocksSEXP, SEXP popSizesSEXP, SEXP numConstraintLowSEXP, SEXP numConstraintHighSEXP, SEXP popConstraintLowSEXP, SEXP popConstraintHighSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -25,7 +50,7 @@ END_RCPP
 }
 // countpartitions
 int countpartitions(List aList);
-RcppExport SEXP redist_countpartitions(SEXP aListSEXP) {
+RcppExport SEXP _redist_countpartitions(SEXP aListSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -36,7 +61,7 @@ END_RCPP
 }
 // calcPWDh
 NumericMatrix calcPWDh(NumericMatrix x);
-RcppExport SEXP redist_calcPWDh(SEXP xSEXP) {
+RcppExport SEXP _redist_calcPWDh(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -45,9 +70,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// calc_polsbypopper
+double calc_polsbypopper(arma::uvec new_cds, arma::vec areas_vec, arma::vec boundarylist_new, arma::mat borderlength_mat, arma::vec pop_vec, List aList, bool discrete);
+RcppExport SEXP _redist_calc_polsbypopper(SEXP new_cdsSEXP, SEXP areas_vecSEXP, SEXP boundarylist_newSEXP, SEXP borderlength_matSEXP, SEXP pop_vecSEXP, SEXP aListSEXP, SEXP discreteSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::uvec >::type new_cds(new_cdsSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type areas_vec(areas_vecSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type boundarylist_new(boundarylist_newSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type borderlength_mat(borderlength_matSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type pop_vec(pop_vecSEXP);
+    Rcpp::traits::input_parameter< List >::type aList(aListSEXP);
+    Rcpp::traits::input_parameter< bool >::type discrete(discreteSEXP);
+    rcpp_result_gen = Rcpp::wrap(calc_polsbypopper(new_cds, areas_vec, boundarylist_new, borderlength_mat, pop_vec, aList, discrete));
+    return rcpp_result_gen;
+END_RCPP
+}
 // segregationcalc
 NumericVector segregationcalc(NumericMatrix distmat, NumericVector grouppop, NumericVector fullpop);
-RcppExport SEXP redist_segregationcalc(SEXP distmatSEXP, SEXP grouppopSEXP, SEXP fullpopSEXP) {
+RcppExport SEXP _redist_segregationcalc(SEXP distmatSEXP, SEXP grouppopSEXP, SEXP fullpopSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -60,7 +102,7 @@ END_RCPP
 }
 // rsg
 List rsg(List adj_list, NumericVector population, int Ndistrict, double target_pop, double thresh, int maxiter);
-RcppExport SEXP redist_rsg(SEXP adj_listSEXP, SEXP populationSEXP, SEXP NdistrictSEXP, SEXP target_popSEXP, SEXP threshSEXP, SEXP maxiterSEXP) {
+RcppExport SEXP _redist_rsg(SEXP adj_listSEXP, SEXP populationSEXP, SEXP NdistrictSEXP, SEXP target_popSEXP, SEXP threshSEXP, SEXP maxiterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -74,9 +116,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sample_partition
+List sample_partition(const std::vector<arma::vec> aList, const arma::mat aMat, const int num_partitions, const int num_samples, const int threads);
+RcppExport SEXP _redist_sample_partition(SEXP aListSEXP, SEXP aMatSEXP, SEXP num_partitionsSEXP, SEXP num_samplesSEXP, SEXP threadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::vector<arma::vec> >::type aList(aListSEXP);
+    Rcpp::traits::input_parameter< const arma::mat >::type aMat(aMatSEXP);
+    Rcpp::traits::input_parameter< const int >::type num_partitions(num_partitionsSEXP);
+    Rcpp::traits::input_parameter< const int >::type num_samples(num_samplesSEXP);
+    Rcpp::traits::input_parameter< const int >::type threads(threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(sample_partition(aList, aMat, num_partitions, num_samples, threads));
+    return rcpp_result_gen;
+END_RCPP
+}
 // swMH
-List swMH(List aList, NumericVector cdvec, NumericVector cdorigvec, NumericVector popvec, NumericVector grouppopvec, int nsims, double eprob, double pct_dist_parity, NumericVector beta_sequence, NumericVector beta_weights, NumericMatrix ssdmat, int lambda, double beta_population, double beta_compact, double beta_segregation, double beta_similar, int anneal_beta_population, int anneal_beta_compact, int anneal_beta_segregation, int anneal_beta_similar, int adjswap, int exact_mh, int adapt_eprob, int adapt_lambda);
-RcppExport SEXP redist_swMH(SEXP aListSEXP, SEXP cdvecSEXP, SEXP cdorigvecSEXP, SEXP popvecSEXP, SEXP grouppopvecSEXP, SEXP nsimsSEXP, SEXP eprobSEXP, SEXP pct_dist_paritySEXP, SEXP beta_sequenceSEXP, SEXP beta_weightsSEXP, SEXP ssdmatSEXP, SEXP lambdaSEXP, SEXP beta_populationSEXP, SEXP beta_compactSEXP, SEXP beta_segregationSEXP, SEXP beta_similarSEXP, SEXP anneal_beta_populationSEXP, SEXP anneal_beta_compactSEXP, SEXP anneal_beta_segregationSEXP, SEXP anneal_beta_similarSEXP, SEXP adjswapSEXP, SEXP exact_mhSEXP, SEXP adapt_eprobSEXP, SEXP adapt_lambdaSEXP) {
+List swMH(List aList, NumericVector cdvec, NumericVector cdorigvec, NumericVector popvec, NumericVector grouppopvec, NumericVector areas_vec, NumericVector county_membership, arma::mat borderlength_mat, int nsims, double eprob, double pct_dist_parity, NumericVector beta_sequence, NumericVector beta_weights, NumericMatrix ssdmat, int lambda, double beta, double weight_population, double weight_compact, double weight_segregation, double weight_similar, double weight_countysplit, std::string adapt_beta, int adjswap, int exact_mh, int adapt_eprob, int adapt_lambda, std::string compactness_measure, double ssd_denom, int num_hot_steps, int num_annealing_steps, int num_cold_steps);
+RcppExport SEXP _redist_swMH(SEXP aListSEXP, SEXP cdvecSEXP, SEXP cdorigvecSEXP, SEXP popvecSEXP, SEXP grouppopvecSEXP, SEXP areas_vecSEXP, SEXP county_membershipSEXP, SEXP borderlength_matSEXP, SEXP nsimsSEXP, SEXP eprobSEXP, SEXP pct_dist_paritySEXP, SEXP beta_sequenceSEXP, SEXP beta_weightsSEXP, SEXP ssdmatSEXP, SEXP lambdaSEXP, SEXP betaSEXP, SEXP weight_populationSEXP, SEXP weight_compactSEXP, SEXP weight_segregationSEXP, SEXP weight_similarSEXP, SEXP weight_countysplitSEXP, SEXP adapt_betaSEXP, SEXP adjswapSEXP, SEXP exact_mhSEXP, SEXP adapt_eprobSEXP, SEXP adapt_lambdaSEXP, SEXP compactness_measureSEXP, SEXP ssd_denomSEXP, SEXP num_hot_stepsSEXP, SEXP num_annealing_stepsSEXP, SEXP num_cold_stepsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -85,6 +142,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type cdorigvec(cdorigvecSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type popvec(popvecSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type grouppopvec(grouppopvecSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type areas_vec(areas_vecSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type county_membership(county_membershipSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type borderlength_mat(borderlength_matSEXP);
     Rcpp::traits::input_parameter< int >::type nsims(nsimsSEXP);
     Rcpp::traits::input_parameter< double >::type eprob(eprobSEXP);
     Rcpp::traits::input_parameter< double >::type pct_dist_parity(pct_dist_paritySEXP);
@@ -92,43 +152,23 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type beta_weights(beta_weightsSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type ssdmat(ssdmatSEXP);
     Rcpp::traits::input_parameter< int >::type lambda(lambdaSEXP);
-    Rcpp::traits::input_parameter< double >::type beta_population(beta_populationSEXP);
-    Rcpp::traits::input_parameter< double >::type beta_compact(beta_compactSEXP);
-    Rcpp::traits::input_parameter< double >::type beta_segregation(beta_segregationSEXP);
-    Rcpp::traits::input_parameter< double >::type beta_similar(beta_similarSEXP);
-    Rcpp::traits::input_parameter< int >::type anneal_beta_population(anneal_beta_populationSEXP);
-    Rcpp::traits::input_parameter< int >::type anneal_beta_compact(anneal_beta_compactSEXP);
-    Rcpp::traits::input_parameter< int >::type anneal_beta_segregation(anneal_beta_segregationSEXP);
-    Rcpp::traits::input_parameter< int >::type anneal_beta_similar(anneal_beta_similarSEXP);
+    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< double >::type weight_population(weight_populationSEXP);
+    Rcpp::traits::input_parameter< double >::type weight_compact(weight_compactSEXP);
+    Rcpp::traits::input_parameter< double >::type weight_segregation(weight_segregationSEXP);
+    Rcpp::traits::input_parameter< double >::type weight_similar(weight_similarSEXP);
+    Rcpp::traits::input_parameter< double >::type weight_countysplit(weight_countysplitSEXP);
+    Rcpp::traits::input_parameter< std::string >::type adapt_beta(adapt_betaSEXP);
     Rcpp::traits::input_parameter< int >::type adjswap(adjswapSEXP);
     Rcpp::traits::input_parameter< int >::type exact_mh(exact_mhSEXP);
     Rcpp::traits::input_parameter< int >::type adapt_eprob(adapt_eprobSEXP);
     Rcpp::traits::input_parameter< int >::type adapt_lambda(adapt_lambdaSEXP);
-    rcpp_result_gen = Rcpp::wrap(swMH(aList, cdvec, cdorigvec, popvec, grouppopvec, nsims, eprob, pct_dist_parity, beta_sequence, beta_weights, ssdmat, lambda, beta_population, beta_compact, beta_segregation, beta_similar, anneal_beta_population, anneal_beta_compact, anneal_beta_segregation, anneal_beta_similar, adjswap, exact_mh, adapt_eprob, adapt_lambda));
-    return rcpp_result_gen;
-END_RCPP
-}
-// genAlConn
-List genAlConn(List aList, NumericVector cds);
-RcppExport SEXP redist_genAlConn(SEXP aListSEXP, SEXP cdsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type aList(aListSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type cds(cdsSEXP);
-    rcpp_result_gen = Rcpp::wrap(genAlConn(aList, cds));
-    return rcpp_result_gen;
-END_RCPP
-}
-// findBoundary
-NumericVector findBoundary(List fullList, List conList);
-RcppExport SEXP redist_findBoundary(SEXP fullListSEXP, SEXP conListSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< List >::type fullList(fullListSEXP);
-    Rcpp::traits::input_parameter< List >::type conList(conListSEXP);
-    rcpp_result_gen = Rcpp::wrap(findBoundary(fullList, conList));
+    Rcpp::traits::input_parameter< std::string >::type compactness_measure(compactness_measureSEXP);
+    Rcpp::traits::input_parameter< double >::type ssd_denom(ssd_denomSEXP);
+    Rcpp::traits::input_parameter< int >::type num_hot_steps(num_hot_stepsSEXP);
+    Rcpp::traits::input_parameter< int >::type num_annealing_steps(num_annealing_stepsSEXP);
+    Rcpp::traits::input_parameter< int >::type num_cold_steps(num_cold_stepsSEXP);
+    rcpp_result_gen = Rcpp::wrap(swMH(aList, cdvec, cdorigvec, popvec, grouppopvec, areas_vec, county_membership, borderlength_mat, nsims, eprob, pct_dist_parity, beta_sequence, beta_weights, ssdmat, lambda, beta, weight_population, weight_compact, weight_segregation, weight_similar, weight_countysplit, adapt_beta, adjswap, exact_mh, adapt_eprob, adapt_lambda, compactness_measure, ssd_denom, num_hot_steps, num_annealing_steps, num_cold_steps));
     return rcpp_result_gen;
 END_RCPP
 }
