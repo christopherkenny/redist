@@ -8,6 +8,13 @@
 
 <title>Exact Redistricting Plan Enumerator — redist.enumerate • redist</title>
 
+<!-- favicons -->
+<link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
+<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png" />
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -45,6 +52,7 @@ valid redistricting plans with $n$ districts given a set of geographic units.
 redist.enumerate also allows suers to implement minimum and maximum
 numbers of geographic units per district, as well as population parity
 requirements." />
+<meta property="og:image" content="/logo.png" />
 
 
 
@@ -137,9 +145,9 @@ numbers of geographic units per district, as well as population parity
 requirements.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>redist.enumerate</span>(<span class='no'>adjobj</span>,
-<span class='kw'>ndists</span> <span class='kw'>=</span> <span class='fl'>2</span>, <span class='kw'>popvec</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>nconstraintlow</span> <span class='kw'>=</span> <span class='kw'>NULL</span>,
-<span class='kw'>nconstrainthigh</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>popcons</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>contiguitymap</span> <span class='kw'>=</span> <span class='st'>"rooks"</span>)</pre>
+    <pre class="usage"><span class='fu'>redist.enumerate</span>(<span class='kw'>adjobj</span>,
+ndists = <span class='fl'>2</span>, popvec = <span class='kw'>NULL</span>, nconstraintlow = <span class='kw'>NULL</span>,
+nconstrainthigh = <span class='kw'>NULL</span>, popcons = <span class='kw'>NULL</span>, contiguitymap = <span class='st'>"rooks"</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -205,10 +213,11 @@ Carlo." Working Paper. Available at
 <a href='http://imai.princeton.edu/research/files/redist.pdf'>http://imai.princeton.edu/research/files/redist.pdf</a>.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='kw'>if</span> (<span class='fl'>FALSE</span>) {
-<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='no'>algdat.pfull</span>)
-<span class='no'>test</span> <span class='kw'>&lt;-</span> <span class='fu'>redist.enumerate</span>(<span class='kw'>adjobj</span> <span class='kw'>=</span> <span class='no'>algdat.pfull</span>$<span class='no'>adjlist</span>)
-}</div></pre>
+    <pre class="examples"><div class='input'><span class='co'>if</span> (<span class='fl'>FALSE</span>) {
+<span class='fu'><a href='https://rdrr.io/r/utils/data.html'>data</a></span>(<span class='kw'>algdat.pfull</span>)
+<span class='kw'>test</span> <span class='op'>&lt;-</span> <span class='fu'>redist.enumerate</span>(adjobj = <span class='kw'>algdat.pfull</span><span class='op'>$</span><span class='kw'>adjlist</span>)
+}
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -220,11 +229,11 @@ Carlo." Working Paper. Available at
 
       <footer>
       <div class="copyright">
-  <p>Developed by Ben Fifield.</p>
+  <p>Developed by Ben Fifield, Christopher T. Kenny, Cory McCartan, Alexander Tarr, Jun Kawahara, Kosuke Imai.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.0.</p>
 </div>
 
       </footer>

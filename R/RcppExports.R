@@ -9,8 +9,28 @@ findBoundary <- function(fullList, conList) {
     .Call(`_redist_findBoundary`, fullList, conList)
 }
 
+crsg <- function(adj_list, population, area, x_center, y_center, Ndistrict, target_pop, thresh, maxiter) {
+    .Call(`_redist_crsg`, adj_list, population, area, x_center, y_center, Ndistrict, target_pop, thresh, maxiter)
+}
+
+dist_dist_diff <- function(p, i_dist, j_dist, x_center, y_center, x, y) {
+    .Call(`_redist_dist_dist_diff`, p, i_dist, j_dist, x_center, y_center, x, y)
+}
+
 cppGeneratePartitions <- function(adjList, numBlocks, popSizes, numConstraintLow, numConstraintHigh, popConstraintLow, popConstraintHigh) {
     .Call(`_redist_cppGeneratePartitions`, adjList, numBlocks, popSizes, numConstraintLow, numConstraintHigh, popConstraintLow, popConstraintHigh)
+}
+
+hamming <- function(v, m) {
+    .Call(`_redist_hamming`, v, m)
+}
+
+log_st_map <- function(g, districts, counties, n_distr) {
+    .Call(`_redist_log_st_map`, g, districts, counties, n_distr)
+}
+
+n_removed <- function(g, districts, n_distr) {
+    .Call(`_redist_n_removed`, g, districts, n_distr)
 }
 
 countpartitions <- function(aList) {
@@ -19,6 +39,66 @@ countpartitions <- function(aList) {
 
 calcPWDh <- function(x) {
     .Call(`_redist_calcPWDh`, x)
+}
+
+max_dev <- function(districts, pop, n_distr) {
+    .Call(`_redist_max_dev`, districts, pop, n_distr)
+}
+
+agg_p2d <- function(dm, vote, nd) {
+    .Call(`_redist_agg_p2d`, dm, vote, nd)
+}
+
+dseats <- function(dm, dcounts, rcounts, nd) {
+    .Call(`_redist_dseats`, dm, dcounts, rcounts, nd)
+}
+
+dseatsDVS <- function(dvs) {
+    .Call(`_redist_dseatsDVS`, dvs)
+}
+
+DVS <- function(dcounts, rcounts) {
+    .Call(`_redist_DVS`, dcounts, rcounts)
+}
+
+effgapEP <- function(dvs, dseat_vec, nd) {
+    .Call(`_redist_effgapEP`, dvs, dseat_vec, nd)
+}
+
+effgap <- function(dcounts, rcounts, totvote) {
+    .Call(`_redist_effgap`, dcounts, rcounts, totvote)
+}
+
+taugap <- function(tau, dvs, dseat_vec, nd) {
+    .Call(`_redist_taugap`, tau, dvs, dseat_vec, nd)
+}
+
+meanmedian <- function(dvs) {
+    .Call(`_redist_meanmedian`, dvs)
+}
+
+bias <- function(dvs, nd) {
+    .Call(`_redist_bias`, dvs, nd)
+}
+
+declination <- function(dvs, dseat_vec, nd) {
+    .Call(`_redist_declination`, dvs, dseat_vec, nd)
+}
+
+lopsidedwins <- function(dvs, dseat_vec, nd) {
+    .Call(`_redist_lopsidedwins`, dvs, dseat_vec, nd)
+}
+
+responsiveness <- function(dvs, v, nd, bandwidth = .01) {
+    .Call(`_redist_responsiveness`, dvs, v, nd, bandwidth)
+}
+
+biasatv <- function(dvs, v, nd) {
+    .Call(`_redist_biasatv`, dvs, v, nd)
+}
+
+minkowski <- function(v, m, p) {
+    .Call(`_redist_minkowski`, v, m, p)
 }
 
 calc_polsbypopper <- function(new_cds, areas_vec, boundarylist_new, borderlength_mat, pop_vec, aList, discrete = FALSE) {
@@ -31,6 +111,10 @@ segregationcalc <- function(distmat, grouppop, fullpop) {
 
 rsg <- function(adj_list, population, Ndistrict, target_pop, thresh, maxiter) {
     .Call(`_redist_rsg`, adj_list, population, Ndistrict, target_pop, thresh, maxiter)
+}
+
+smc_plans <- function(N, l, counties, pop, n_distr, tol, gamma, log_prob, thresh, alpha, infl = 5L, verbosity = 1L) {
+    .Call(`_redist_smc_plans`, N, l, counties, pop, n_distr, tol, gamma, log_prob, thresh, alpha, infl, verbosity)
 }
 
 sample_partition <- function(aList, aMat, num_partitions, num_samples, threads = 1L) {

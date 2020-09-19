@@ -6,11 +6,12 @@
 ## Purpose: R wrapper to run swMH() code (non-mpi)
 ###########################################
 
-combine.par.anneal <- function(a, b){
 
+combine.par.anneal <- function(a, b){
+    
     ## Names of object
     name_out <- names(a)
-
+    
     ## Create output object
     output_obj <- vector(mode = "list", length = length(a))
     
@@ -22,7 +23,7 @@ combine.par.anneal <- function(a, b){
             output_obj[[i]] <- c(a[[i]], b[[i]])
         }
     }
-
+    
     names(output_obj) <- name_out
     return(output_obj)
     
@@ -133,7 +134,7 @@ redist.mcmc.anneal <- function(adjobj, popvec, ndists = NULL,
         cat("redist.mcmc.anneal(): Automated Redistricting Simulation Using
          Markov Chain Monte Carlo\n\n", append = TRUE)
     }
-
+    
     ## --------------
     ## Initial checks
     ## --------------
@@ -156,12 +157,12 @@ redist.mcmc.anneal <- function(adjobj, popvec, ndists = NULL,
     if(!(compactness_metric %in% c("fryer-holden", "polsby-popper"))){
         stop("We only support either 'fryer-holden' or 'polsby-popper' as compactness metrics.")
     }
-
+    
     ## Set seed before first iteration of algorithm if provided by user
     if(!is.null(rngseed) & is.numeric(rngseed)){
         set.seed(rngseed)
     }
-
+    
     if(adapt_lambda){
         adapt_lambda <- 1
     }else{
@@ -177,7 +178,7 @@ redist.mcmc.anneal <- function(adjobj, popvec, ndists = NULL,
     }else{
         exact_mh <- 0
     }
-
+    
     ## ------------------
     ## Preprocessing data
     ## ------------------
@@ -198,14 +199,14 @@ redist.mcmc.anneal <- function(adjobj, popvec, ndists = NULL,
                                  betaweights = NULL,
                                  adjswaps = TRUE, maxiterrsg = maxiterrsg,
                                  contiguitymap = contiguitymap)
-
+    
     ## Set betas - if tempering, modified later
     weightpop <- preprocout$params$weightpop
     weightcompact <- preprocout$params$weightcompact
     weightseg <- preprocout$params$weightseg
     weightsimilar <- preprocout$params$weightsimilar
     weightcountysplit <- preprocout$params$weightcountysplit
-
+    
     cat("Starting swMH().\n")
     algout <- swMH(aList = preprocout$data$adjlist,
                    cdvec = preprocout$data$initcds,
@@ -245,7 +246,7 @@ redist.mcmc.anneal <- function(adjobj, popvec, ndists = NULL,
     if(!is.null(savename)){
         save(algout, file = paste(savename, ".RData", sep = ""))
     }
-
+    
     ## Examine the data
     return(algout)
     
@@ -261,7 +262,7 @@ redist.mcmc.anneal <- function(adjobj, popvec, ndists = NULL,
 #'
 #' @export
 redist.combine.anneal <- function(file_name){
-
+    
     ## List files
     fn <- list.files()[grep(file_name, list.files())]
     if(length(fn) == 0){
@@ -269,24 +270,24 @@ redist.combine.anneal <- function(file_name){
     }
     load(fn[1])
     names_obj <- names(algout)
-
+    
     # Create containers
     nr <- length(algout$partitions)
     nc <- length(fn)
     partitions <- matrix(NA, nrow = nr, ncol = nc)
-
+    
     veclist <- vector(mode = "list", length = length(algout)-1)
     for(i in 1:length(veclist)){
         veclist[[i]] <- rep(NA, nc)
     }
-
+    
     ## ------------
     ## Combine data
     ## ------------
     for(i in 1:length(fn)){
         ## Load data
         load(fn[i])
-
+        
         ## Store objects together
         for(j in 1:length(algout)){
             if(j == 1){
@@ -296,7 +297,7 @@ redist.combine.anneal <- function(file_name){
             }
         }
     }
-
+    
     ## ---------------------------
     ## Store data in algout object
     ## ---------------------------
@@ -309,7 +310,7 @@ redist.combine.anneal <- function(file_name){
         }
     }
     names(algout) <- names_obj
-
+    
     ## -------------
     ## Output object
     ## -------------
@@ -326,12 +327,12 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
                            borderlength_mat = NULL, ssdmat = NULL,
                            compactness_metric = NULL,
                            temper = NULL, constraint = NULL,
-                           constraintweights = constraintweights,
+                           constraintweights = NULL,
                            betaseq = NULL, betaseqlength = NULL,
                            betaweights = NULL, adjswaps = TRUE, maxiterrsg = NULL,
-                           contiguitymap = NULL
-                           ){
-
+                           contiguitymap = "rooks"
+){
+    
     #########################
     ## Inputs to function: ##
     #########################
@@ -381,10 +382,10 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
     ## If not a list, convert adjlist to list ##
     ############################################
     if(!is.list(adjobj)){
-
+        
         ## If a matrix, check to see if adjacency matrix
         if(is.matrix(adjobj)){
-
+            
             ## Is it square?
             squaremat <- (nrow(adjobj) == ncol(adjobj))
             ## All binary entries?
@@ -394,16 +395,16 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
             diag <- (sum(diag(adjobj)) == nrow(adjobj))
             ## Symmetric?
             symmetric <- isSymmetric(adjobj)
-
+            
             ## If all are true, change to adjlist and automatically zero-index
             if(squaremat & binary & diag & symmetric){
                 
                 ## Initialize object
                 adjlist <- vector("list", nrow(adjobj))
-
+                
                 ## Loop through rows in matrix
                 for(i in 1:nrow(adjobj)){
-
+                    
                     ## Extract row
                     adjvec <- adjobj[,i]
                     ## Find elements it is adjacent to
@@ -421,7 +422,7 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
                 stop("Please input valid adjacency matrix")
             }
         }else if(class(adjobj) == "SpatialPolygonsDataFrame"){ ## shp object
-
+            
             ## Distance criterion
             queens <- ifelse(contiguitymap == "rooks", FALSE, TRUE)
             
@@ -440,12 +441,12 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
             stop("Please input an adjacency list, adjacency matrix, or Spatial
                  Polygons shp file")
         }
-
+        
     }else{
-
+        
         ## Rename adjacency object as list
         adjlist <- adjobj
-
+        
         ## Is list zero-indexed?
         minlist <- min(unlist(adjlist))
         maxlist <- max(unlist(adjlist))
@@ -463,7 +464,7 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
         }
         
     }
-
+    
     ###################################################################
     ## Check whether initial partitions (if provided) are contiguous ##
     ###################################################################
@@ -484,7 +485,7 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
             }
         }
     }
-
+    
     ##############################################################################
     ## If no initial congressional districts provided, use Random Seed and Grow ##
     ## (Chen and Rodden 2013) algorithm                                         ##
@@ -496,7 +497,7 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
         }else{
             popcons_rsg <- popcons
         }
-
+        
         ## Print start
         divider <- c(paste(rep("=", 20), sep = "", collapse = ""), "\n")
         
@@ -515,7 +516,7 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
         initcds <- initout$district_membership
         
     }
-
+    
     ###########################################################
     ## Check other inputs to make sure they are right length ##
     ###########################################################
@@ -546,7 +547,7 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
             stop("You do not have a county membership assigned for every unit.")
         }
     }
-
+    
     ####################
     ## Zero-index cds ##
     ####################
@@ -556,7 +557,7 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
     if(length(unique(initcds)) != (max(initcds) + 1)){
         stop("Need congressional assignment ids to be sequence increasing by 1")
     }
-
+    
     ####################################################
     ## Calculate parity and population margin allowed ##
     ####################################################
@@ -564,7 +565,7 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
     if(is.null(popcons)){
         popcons <- 100
     }
-
+    
     #####################################
     ## Set grouppopvec if not provided ##
     #####################################
@@ -583,11 +584,11 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
         }
         countymembership <- countymembership - min(countymembership)
     }
-   
+    
     ################################
     ## Set ssdmat if not provided ##
     ################################
-    if(is.null(ssdmat) & "compact" %in% constraint & compactness_metric == "fryer-holden"){
+    if(is.null(ssdmat) & "compact" %in% constraint & "fryer-holden" %in% compactness_metric){
         if(class(adjobj) == "SpatialPolygonsDataFrame"){
             centroids <- coordinates(adjobj)
             ssdmat <- calcPWDh(centroids)
@@ -597,11 +598,11 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
     }else if(is.null(ssdmat)){
         ssdmat <- matrix(1, 2, 2)
     }
-
+    
     ## ------------------------------------
     ## Set Polsby-Popper compactness inputs
     ## ------------------------------------
-    if("compact" %in% constraint & compactness_metric == "polsby-popper"){
+    if("compact" %in% constraint & "polsby-popper" %in% compactness_metric){
         if(is.null(areasvec) | is.null(borderlength_mat)){
             stop("If constraining on Polsby-Popper compactness, please provide both a vector of the areas of each geographic unit and a list with the border lengths of each pair of points.")
         }
@@ -611,15 +612,15 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
     }else{
         areasvec <- c(0, 0, 0, 0)
         borderlength_mat <- matrix(0, 2, 2)
-
+        
     }
-
+    
     ########################
     ## Set up constraints ##
     ########################
-    beta <- ifelse(is.null(constraint) | temper, 0, 1)
+    beta <- ifelse(is.null(constraint) | (temper %in% c(TRUE)), 0, 1)
     temperbeta <- ifelse(temper, "tempering", "none")
-
+    
     if("population" %in% constraint){
         weightpop <- constraintweights[which(constraint == "population")]
     }else{
@@ -645,13 +646,13 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
     }else{
         weightcountysplit <- 0
     }
-   
+    
     ###################################
     ## Check if betaspacing provided ##
     ###################################
-    if(temperbeta == "tempering"){
+    if("tempering" %in% temperbeta){
         if(betaseq[1] == "powerlaw"){
-
+            
             ## Generate power law sequence
             betaseq <- rep(NA, betaseqlength)
             for(i in 1:length(betaseq)){
@@ -670,15 +671,15 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
         betaseq <- c(1, 1, 1, 1)
         betaweights <- c(1, 1, 1, 1)
     }
-
+    
     ## Reverse beta sequence
     betaseq <- rev(betaseq)
-
+    
     ########################################
     ## Convert adjacent swaps flag to 0/1 ##
     ########################################
     adjswaps <- adjswaps * 1
-
+    
     #################
     ## Return list ##
     #################
@@ -708,9 +709,9 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
             weightcountysplit = weightcountysplit
         )
     )
-
+    
     class(preprocout) <- "redist"
-
+    
     return(preprocout)
     
 }
@@ -790,19 +791,19 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
 #' }
 #' @export
 redist.combine <- function(savename, nloop, nthin, temper = 0){
-
+    
     ##############################
     ## Set up container objects ##
     ##############################
     load(paste(savename, "_loop1.RData", sep = ""))
     names_obj <- names(algout)
-
+    
     ## Create containers
     nr <- nrow(algout$partitions)
     nc <- ncol(algout$partitions)
     partitions <- matrix(NA, nrow = nr,
                          ncol = (nc * nloop / nthin))
-
+    
     veclist <- vector(mode = "list", length = length(algout)-1)
     for(i in 1:length(veclist)){
         veclist[[i]] <- rep(NA, (nc * nloop / nthin))
@@ -810,17 +811,17 @@ redist.combine <- function(savename, nloop, nthin, temper = 0){
     
     ## Indices for thinning
     indthin <- which((1:nc) %% nthin == 0)
-
+    
     ####################################
     ## Combine data in multiple loops ##
     ####################################
     for(i in 1:nloop){
-
+        
         ## Load data
         load(paste(savename, "_loop", i, ".RData", sep = ""))
-
+        
         ind <- ((i - 1) * (nc / nthin) + 1):(i * (nc / nthin))
-    
+        
         ## Store objects together
         for(j in 1:length(algout)){
             if(j == 1){
@@ -831,7 +832,7 @@ redist.combine <- function(savename, nloop, nthin, temper = 0){
         }
         
     }
-
+    
     #################################
     ## Store data in algout object ##
     #################################
@@ -849,7 +850,7 @@ redist.combine <- function(savename, nloop, nthin, temper = 0){
     ## Set class of object ##
     #########################
     class(algout) <- "redist"
-
+    
     #################
     ## Save object ##
     #################
@@ -1015,8 +1016,8 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
                         adapt_lambda = FALSE, adapt_eprob = FALSE,
                         contiguitymap = "rooks", exact_mh = FALSE, savename = NULL,
                         verbose = TRUE
-                        ){
-
+){
+    
     if(verbose){
         ## Initialize ##
         divider <- c(paste(rep("=", 20), sep = "", collapse = ""), "\n")
@@ -1055,12 +1056,12 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
     if(!(compactness_metric %in% c("fryer-holden", "polsby-popper"))){
         stop("We only support either 'fryer-holden' or 'polsby-popper' as compactness metrics.")
     }
-
+    
     ## Set seed before first iteration of algorithm if provided by user
     if(!is.null(rngseed) & is.numeric(rngseed)){
         set.seed(rngseed)
     }
-
+    
     if(adapt_lambda){
         adapt_lambda <- 1
     }else{
@@ -1096,14 +1097,14 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
                                  betaweights = betaweights,
                                  adjswaps = adjswaps, maxiterrsg = maxiterrsg,
                                  contiguitymap = contiguitymap)
-
+    
     ## Set betas - if tempering, modified later
     weightpop <- preprocout$params$weightpop
     weightcompact <- preprocout$params$weightcompact
     weightseg <- preprocout$params$weightseg
     weightsimilar <- preprocout$params$weightsimilar
     weightcountysplit <- preprocout$params$weightcountysplit
-
+    
     ## Get starting loop value
     loopstart <- loopscompleted + 1
     
@@ -1111,12 +1112,12 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
     ## Run the algorithm ##
     #######################
     for(i in loopstart:nloop){
-
+        
         ## Get congressional districts, tempered beta values
         if(i > loopstart){
             
             cds <- algout$partitions[,nsims]
-
+            
             if(temper){
                 beta <- algout$beta_sequence[nsims]
             }
@@ -1124,11 +1125,11 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
             if(!is.null(rngseed) & is.numeric(rngseed)){
                 .Random.seed <- algout$randseed
             }
-
+            
             rm(list = "algout")
             
         } else{ 
-
+            
             ## Reload the data if re-startomg
             if(loopstart > 1){
                 
@@ -1142,7 +1143,7 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
                 }
                 
                 cds <- algout$partitions[,nsims]
-                                
+                
                 if(temper){
                     beta <- algout$beta_sequence[nsims]
                 }
@@ -1150,15 +1151,15 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
                 if(!is.null(rngseed) & is.numeric(rngseed)){
                     .Random.seed <- algout$randseed
                 }
-
+                
                 rm(list = "algout")
-
+                
             }else{
                 cds <- preprocout$data$initcds
             }
             
         }        
-
+        
         ## Run algorithm
         algout <- swMH(aList = preprocout$data$adjlist,
                        cdvec = cds,
@@ -1188,9 +1189,9 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
                        adapt_eprob = adapt_eprob,
                        compactness_measure = compactness_metric,
                        ssd_denom = ssd_denom)
-
+        
         class(algout) <- "redist"
-
+        
         ## Save random number state if setting the seed
         if(!is.null(rngseed)){
             algout$randseed <- .Random.seed
@@ -1202,12 +1203,12 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
         }
         
     }
-
+    
     ####################
     ## Annealing flag ##
     ####################
     temperflag <- ifelse(preprocout$params$temperbeta == "tempering", 1, 0)
-
+    
     ###############################
     ## Combine and save the data ##
     ###############################
@@ -1218,12 +1219,12 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
     }else if(!is.null(savename)){
         save(algout, file = paste(savename, ".RData", sep = ""))
     }
-
+    
     ## Examine the data
     if(nloop == 1){
         return(algout)
     }
-
+    
 }
 
 #' Inverse probability reweighting for MCMC Redistricting
@@ -1314,15 +1315,15 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
 #' }
 #' @export
 redist.ipw <- function(algout, targetpop = NULL){
-
+    
     ## Warnings:
     if(!inherits(algout, "redist")){
         stop("Please provide a proper redist object")
     }
-
+    
     ## Get indices drawn under target beta if tempering
     indbeta <- which(algout$beta_sequence == 1)
-
+    
     ## Get indices of draws that meet target population
     if(!is.null(targetpop)){
         indpop <- which(algout$distance_parity <= targetpop)
@@ -1332,18 +1333,18 @@ redist.ipw <- function(algout, targetpop = NULL){
     
     ## Get intersection of indices
     inds <- intersect(indpop, indbeta)
-
+    
     ## Construct weights
     psi <- algout[["energy_psi"]][inds]
     weights <- 1 / exp(-1 * psi)
-
+    
     ## Resample indices
     inds <- sample(inds, length(inds), replace = TRUE, prob = weights)
-
+    
     ## Subset the entire list
     algout_new <- vector(mode = "list", length = length(algout))
     for(i in 1:length(algout_new)){
-
+        
         ## Subset the matrix first, then the vectors
         if(i == 1){
             algout_new[[i]] <- algout[[i]][,inds]
@@ -1353,11 +1354,37 @@ redist.ipw <- function(algout, targetpop = NULL){
         
     }
     names(algout_new) <- names(algout)
-
+    
     ## Change class
     class(algout_new) <- "redist"
-
+    
     return(algout_new)
     
 }
 
+####################################
+# S3 generics
+
+#' Extract the redistricting matrix from a \code{redist} object
+#' @method as.matrix redist
+#' @param x redist object
+#' @param \\dots additional arguments
+#' @export
+as.matrix.redist = function(x, ...) {
+    x$cdvec
+}
+
+#' @method print redist
+#' @importFrom utils str
+#' @export
+print.redist = function(x, ...) {
+    cat(x$nsims, " sampled plans with ", max(x$cdvec[,1]), " districts from a ",
+        length(x$aList), "-unit map, drawn\n using ",
+        c(mcmc="Markov chain Monte Carlo",
+          smc="Sequential Monte Carlo")[x$algorithm], sep="")
+    if (x$pct_dist_parity < 1)
+        cat(" and a ", 100*x$pct_dist_parity, "% population constraint.\n", sep="")
+    else
+        cat(".\n")
+    cat(str(x$cdvec))
+}

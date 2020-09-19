@@ -40,20 +40,20 @@
 #' }
 #'
 #' @author Benjamin Fifield, Department of Politics, Princeton University
-#' \email{bfifield@@princeton.edu}, \url{http://www.benfifield.com}
+#' \email{benfifield@@gmail.com}, \url{https://www.benfifield.com/}
 #'
 #' Michael Higgins, Department of Statistics, Kansas State University
 #' \email{mikehiggins@@k-state.edu},
-#' \url{http://www-personal.ksu.edu/~mikehiggins/}
+#' \url{http://www-personal.k-state.edu/~mikehiggins/}
 #'
 #' Kosuke Imai, Department of Politics, Princeton University
-#' \email{kimai@@princeton.edu}, \url{http://imai.princeton.edu}
+#' \email{imai@@harvard.edu}, \url{http://imai.princeton.edu}
 #'
 #' James Lo, \email{jameslo@@princeton.edu}
 #'
 #' Alexander Tarr, Department of Electrical Engineering, Princeton University
 #' \email{atarr@@princeton.edu}
-#' 
+#'
 #' @references Jowei Chen and Jonathan Rodden (2013) ``Unintentional
 #' Gerrymandering: Political Geography and Electoral Bias in Legislatures.''
 #' Quarterly Journal of Political Science. 8(3): 239-269.
@@ -102,14 +102,14 @@ redist.rsg <- function(adj.list,
 {
     if(verbose){
         divider <- c(paste(rep("=", 20), sep = "", collapse = ""), "\n")
-        
+
         cat("\n")
         cat(divider)
         cat("redist.rsg(): Automated Redistricting Starts\n\n")
     }
 
     target.pop <- sum(population) / ndists
-    
+
     ## Main Call to Computation - if returning NA, break.
     ## If returning districts but not contiguous, repeat
     ## First attempt
@@ -139,7 +139,7 @@ redist.rsg <- function(adj.list,
     if(is.na(ret$district_membership[1])){
 
         stop("redist.rsg() failed to return a valid partition. Try increasing maxiterrsg")
-        
+
     }
 
     if(verbose){
@@ -147,7 +147,7 @@ redist.rsg <- function(adj.list,
                   length(adj.list), " precincts in ",
                   round(time[3], digits=2), " seconds...\n\n", sep = ""), append = TRUE)
     }
-    
+
     return(ret)
 
 }

@@ -16,7 +16,6 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(redist)
-library(tidyverse)
 library(igraph)
 library(spdep)
 library(coda)
@@ -42,7 +41,7 @@ redist can be installed either from CRAN, for the stable version with:
 ```{r, eval=F}
 install.packages('redist')
 ```
-or from github, which is updated more often:
+or from GitHub, which is updated more often:
 ```{r, eval=F}
 devtools::install_github(repo = 'kosukeimai/redist', ref = 'master')
 ```
@@ -58,11 +57,18 @@ For additional functions for working with the shapefiles, using `spdep` is recom
 ```{r}
 library(spdep)
 ```
-For plotting maps and adjacency graphs, `tidyverse` and `igraph` are useful. Tidyverse allows for making ggplot maps, when used with `sf`.  These may be loaded with:
+For plotting maps and adjacency graphs, `ggplot2` and `igraph` are useful. The former allows for making ggplot maps, when used with `sf`.  These may be loaded with:
 ```{r}
 library(igraph)
-library(tidyverse)
+library(ggplot2)
 ```
+
+Additionally useful data manipulation tools for working with objects from the package are `dplyr` and `magrittr`.
+```{r}
+library(dplyr)
+library(magrittr)
+```
+
 
 # Included Data {#data}
 The package contains four datasets. The first three are `algdat.p10`, `algdat.p20`, and `algdat.pfull` which contain data for 25 continuous precincts within Florida when partitioned into three districts.  Respectively, these are those plans which fall within 10% population parity, 20% population parity, and all possible partitions. These are loaded in with the package and can be loaded as follows:
@@ -90,14 +96,13 @@ names(algdat.pfull)
   * blackpop - the number of black individuals in that precinct
   * hispanicpop - the number of hispanic individuals in that precinct
  
-* segregation.index - the dissimilarity index of segregation for each plan from [Trends in the Residential Segregation of Blacks, Hispanics, and Asians: 1970-1980 (Massey & Denton 1987)](https://www.jstor.org/stable/2095836?seq=1).
+* segregation.index - the dissimilarity index of segregation for each plan from [Trends in the Residential Segregation of Blacks, Hispanics, and Asians: 1970-1980 (Massey & Denton 1987)](https://www.jstor.org/stable/2095836).
 
 * distancemat - a symmetric matrix with the squared distance between two precincts as its entries
 
 The fourth data set is the sf dataframe, containing the shapes themselves for creating these objects. It can be called with:
 ```{r}
-fl25 <- readRDS('~/Documents/GitHub/redist/data/fl25.rda')#this will be swapped for data line once rebuilt
-#data(fl25)
+data("fl25")
 ```
 
 From the head of the data, we can see this is a typical dataframe with a geometry column appended. See the [website for sf](https://r-spatial.github.io/sf/) for more information about this type of object.
@@ -119,12 +124,11 @@ Each column contains useful information for typical redistricting questions:
  * `geometry` contains the sf geometry.
 
 
-# Adjaceny-Based Redistricting {#adj}
+# Adjacency-Based Redistricting {#adj}
 We begin with a simple example of thinking about adjacency-based redistricting, using a small piece of Florida, named fl25. It can be 
 loaded with the data command as follows. For more information on the data, see [the data section](#data)
 ```{r}
-fl25 <- readRDS('~/Documents/GitHub/redist/data/fl25.rda')#this will be swapped for data line once rebuilt
-#data(fl25)
+data("fl25")
 ```
 
 This Florida subset contains the shapefiles for the districts, which can be plotted with sf.
@@ -161,7 +165,7 @@ Using igraph, we can easily plot the whole set of adjacencies:
 plot(graph_from_adj_list(adjlist, mode = 'total'))
 ```
 
-While these are numbered in 1:25, the backend in C++ requires 0 indexing for efficiency, so we sink the adjacency list to be 0:24.
+While these are numbered in 1:25, the back end in C++ requires 0 indexing for efficiency, so we sink the adjacency list to be 0:24.
 ```{r}
 for(i in 1:25){
   adjlist[[i]] <- adjlist[[i]]-1
@@ -209,7 +213,7 @@ class(alg_mcmc)
 names(alg_mcmc)
 ```
 
-For simple runs of the algorithm, the most important pieces of the output are `partitions` and `distance_parity`.  The `partitions` object is a matrix with `ndist` rows and `nsims` columns. Each column is one districting plan, where the numbers go from 0 to n-1, with each number represents the district assignment.
+For simple runs of the algorithm, the most important pieces of the output are `partitions` and `distance_parity`.  The `partitions` object is a matrix with `ndist` rows and `nsims` columns. Each column is one redistricting plan, where the numbers go from 0 to n-1, with each number represents the district assignment.
 
 ```{r}
 alg_mcmc$partitions[,1]
@@ -272,7 +276,7 @@ mcmc_chains <- parallel::mclapply(1:nchains, function(x){
 [Back to top](#top)
 
 # Random Seed Growth {#rsg}
-This package also contains an implementation of Chen and Rodden's non-compact Random Seed and Grow districting algorithm from their paper [Unintentional Gerrymandering: Political Geography and Electoral Biases in Legislatures](https://web.stanford.edu/~jrodden/wp/florida.pdf).
+This package also contains an implementation of Chen and Rodden's non-compact Random Seed and Grow redistricting algorithm from their paper [Unintentional Gerrymandering: Political Geography and Electoral Biases in Legislatures](https://web.stanford.edu/~jrodden/wp/florida.pdf).
 
 The adjacency list, via `adj.list`, is created as in [Adjacency-Based Redistricting](#adj), `population` is the population of the districts, `ndists` is the number of districts, and `thresh` is the allowed population parity.  A `thresh` of `0.05` allows for 5\% population parity. In easier redistricting questions, a small `maxiter` is typically sufficient, but in large maps, values may be closer to `50,000` to ensure that a solution is found.
 ```{r}
@@ -299,7 +303,7 @@ rsg$district_pop
 [Back to top](#top)
 
 # Segregation Index {#seg}
-To evaluate districting plans, the `redist` package comes with the `redist.segcalc` function. This computes the segregation index introduced in Massey and Denton 1987.
+To evaluate redistricting plans, the `redist` package comes with the `redist.segcalc` function. This computes the segregation index introduced in Massey and Denton 1987.
 
 It takes three arguments, `algout`, which is a `redist` object from the various `mcmc` function or `rsg` function, `grouppop` which is the population of the group being used for comparison, and `fullpop` is the total population of the precinct.
 ```{r}
@@ -313,10 +317,6 @@ This returns a numeric vector with the an entry for each district provided.
 [Back to top](#top)
 
 # Diagnostic Plots {#diag}
-```{r}
-source('~/Documents/GitHub/redist/R/diagplot.R')
-```
-
 When using the MCMC algorithms, there are various useful diagnostic plots. The `redist.diagplot` function creates familiar plots by converting numeric entries into `mcmc` objects to use with `coda`.
 
 The first four plots take a single index, such as one created by `redist.segcalc`.
