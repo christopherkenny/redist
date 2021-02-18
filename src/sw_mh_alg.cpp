@@ -11,10 +11,13 @@
 #include <RcppArmadilloExtensions/sample.h>
 #include <time.h>
 #include <R.h>
+#include "redist_types.h"
 #include "sw_mh_helper.h"
 #include "make_swaps_helper.h"
 #include "constraint_calc_helper.h"
 #include "redist_analysis.h"
+#include "tree_op.h"
+
 
 using namespace Rcpp;
 
@@ -60,19 +63,28 @@ List swMH(List aList,
 	  NumericVector beta_sequence,
 	  NumericVector beta_weights,
 	  NumericMatrix ssdmat,
+	  double tgt_min,
+	  double tgt_other,
+	  IntegerVector rvote,
+	  IntegerVector dvote,
+	  NumericVector minorityprop,
 	  int lambda = 0,
 	  double beta = 0.0,
 	  double weight_population = 0.0,
 	  double weight_compact = 0.0,
 	  double weight_segregation = 0.0,
+	  double weight_vra = 0.0,
 	  double weight_similar = 0.0,
 	  double weight_countysplit = 0.0,
+	  double weight_partisan = 0.0,
+	  double weight_minority = 0.0,
 	  std::string adapt_beta = "none",
 	  int adjswap = 1,
 	  int exact_mh = 0,
 	  int adapt_eprob = 0,
 	  int adapt_lambda = 0,
 	  std::string compactness_measure = "fryer-holden",
+	  std::string partisan_measure = "efficiency-gap",
 	  double ssd_denom = 1.0,
 	  int num_hot_steps = 0,
 	  int num_annealing_steps = 0,
@@ -106,22 +118,34 @@ List swMH(List aList,
      beta_population: strength of constraint for achieving population parity.
 
      beta_compact: strength of constraint for achieving district compactness
-
+   
      beta_segregation: strength of constraint for packing group into district
 
+     beta_vra: strength of constraint for packing group into district
+
      beta_similar: strength of constraint for examining plans similar to original district
+   
+   beta_partisan: strength of constraint for minimizing partisan bias measure
 
      anneal_beta_population: flag for whether to anneal the beta pop parameter
 
      anneal_beta_compact: flag for whether to anneal the beta compactness parameter
-
+   
      anneal_beta_segregation: flag for whether to anneal the beta segregation parameter
+
+     anneal_beta_vra: flag for whether to anneal the beta vra parameter
 
      anneal_beta_similar: flag for whether to anneal the beta similarity parameter
 
      adjswap: flag for whether to force algorithm to only do adjacent swaps
 
      exact_mh: flag for whether to calculate the exact metropolis-hastings w boundary correction
+   
+   partisan_measure: string, only "efficiency-gap" implemented thus far
+   
+   rvote: vote for Republicans (or Party A)
+   
+   dvote: vote for Democrats (or Party B != A)
 
   */
 
@@ -194,8 +218,11 @@ List swMH(List aList,
   NumericVector psipop_store(nsims);
   NumericVector psicompact_store(nsims);
   NumericVector psisegregation_store(nsims);
+  NumericVector psivra_store(nsims);
   NumericVector psisimilar_store(nsims);
   NumericVector psicountysplit_store(nsims);
+  NumericVector psipartisan_store(nsims);
+  NumericVector psiminority_store(nsims);
 
   // Store value of p, lambda, weights for all simulations
   NumericVector pparam_store(nsims);
@@ -233,6 +260,8 @@ List swMH(List aList,
     Rcout << "-- Simulating at hot temperature." << std::endl;
     Rcout << "---------------------------------" << std::endl;
   }
+  
+  Graph g = list_to_graph(aList);
   // Open the simulations
   while(k < nsims){
 
@@ -294,10 +323,20 @@ List swMH(List aList,
 				   weight_population,
 				   weight_compact,
 				   weight_segregation,
+				   weight_vra,
 				   weight_similar,
 				   weight_countysplit,
+				   weight_partisan,
+				   weight_minority,
 				   ssd_denom,
-				   compactness_measure);
+				   tgt_min,
+				   tgt_other,
+				   rvote,
+				   dvote,
+				   minorityprop,
+				   compactness_measure,
+				   partisan_measure,
+				   g = g);
 
     }while(as<int>(swap_partitions["goodprop"]) == 0);
 
@@ -334,13 +373,22 @@ List swMH(List aList,
 	psicompact_store[k] = swap_partitions["compact_new_psi"];
       }
       if(weight_segregation != 0.0){
-	psisegregation_store[k] = swap_partitions["segregation_new_psi"];
+        psisegregation_store[k] = swap_partitions["segregation_new_psi"];
+      }
+      if(weight_vra != 0.0){
+	psivra_store[k] = swap_partitions["vra_new_psi"];
       }
       if(weight_similar != 0.0){
 	psisimilar_store[k] = swap_partitions["similar_new_psi"];
       }
       if(weight_countysplit != 0.0){
 	psicountysplit_store[k] = swap_partitions["countysplit_new_psi"];
+      }
+      if(weight_partisan != 0.0){
+        psipartisan_store[k] = swap_partitions["partisan_new_psi"];
+      }
+      if(weight_minority != 0.0){
+        psiminority_store[k] = swap_partitions["minority_new_psi"];
       }
     }else{
       energy_store[k] = swap_partitions["energy_old"];
@@ -351,13 +399,22 @@ List swMH(List aList,
 	psicompact_store[k] = swap_partitions["compact_old_psi"];
       }
       if(weight_segregation != 0.0){
-	psisegregation_store[k] = swap_partitions["segregation_old_psi"];
+        psisegregation_store[k] = swap_partitions["segregation_old_psi"];
+      }
+      if(weight_vra != 0.0){
+	psivra_store[k] = swap_partitions["vra_old_psi"];
       }
       if(weight_similar != 0.0){
 	psisimilar_store[k] = swap_partitions["similar_old_psi"];
       }
       if(weight_countysplit != 0.0){
 	psicountysplit_store[k] = swap_partitions["countysplit_old_psi"];
+      }
+      if(weight_partisan != 0.0){
+        psipartisan_store[k] = swap_partitions["partisan_old_psi"];
+      }
+      if(weight_minority != 0.0){
+        psiminority_store[k] = swap_partitions["minority_old_psi"];
       }
     }
 
@@ -508,8 +565,11 @@ List swMH(List aList,
     out["constraint_pop"] = psipop_store;
     out["constraint_compact"] = psicompact_store;
     out["constraint_segregation"] = psisegregation_store;
+    out["constraint_vra"] = psivra_store;
     out["constraint_similar"] = psisimilar_store;
     out["constraint_countysplit"] = psicountysplit_store;
+    out["constraint_partisan"] = psipartisan_store;
+    out["constraint_minority"] = psiminority_store;
     out["boundary_partitions"] = boundarypartitions_store;
     out["boundaryratio"] = boundaryratio_store;
     if(adapt_beta == "tempering"){
@@ -534,8 +594,11 @@ List swMH(List aList,
     out["constraint_pop"] = psipop_store[k-1];
     out["constraint_compact"] = psicompact_store[k-1];
     out["constraint_segregation"] = psisegregation_store[k-1];
+    out["constraint_vra"] = psivra_store[k-1];
     out["constraint_similar"] = psisimilar_store[k-1];
     out["constraint_countysplit"] = psicountysplit_store[k-1];
+    out["constraint_partisan"] = psipartisan_store[k-1];
+    out["constraint_minority"] = psiminority_store[k-1];
     out["boundary_partitions"] = boundarypartitions_store[k-1];
     out["boundaryratio"] = boundaryratio_store[k-1];
     if(adapt_eprob == 1){

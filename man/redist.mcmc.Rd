@@ -25,6 +25,7 @@ redist.mcmc(
   constraint = NULL,
   constraintweights = NULL,
   compactness_metric = "fryer-holden",
+  partisan_metric = "efficiency-gap",
   ssd_denom = 1,
   betaseq = "powerlaw",
   betaseqlength = 10,
@@ -37,7 +38,12 @@ redist.mcmc(
   contiguitymap = "rooks",
   exact_mh = FALSE,
   savename = NULL,
-  verbose = TRUE
+  verbose = TRUE,
+  tgt_min = 0.55,
+  tgt_other = 0.25,
+  rvote = NULL,
+  dvote = NULL,
+  minorityprop = NULL
 )
 }
 \arguments{
@@ -97,7 +103,8 @@ units. The default is \code{NULL}.}
 \item{temper}{Whether to use simulated tempering algorithm. Default is FALSE.}
 
 \item{constraint}{Which constraint to apply. Accepts any combination of \code{compact},
-\code{segregation}, \code{population}, \code{similarity}, or \code{none}
+\code{segregation}, \code{vra}, \code{population}, \code{similarity}, \code{partisan}, 
+\code{minority} or \code{none}
 (no constraint applied). The default is NULL.}
 
 \item{constraintweights}{The weights to apply to each constraint. Should be a vector
@@ -106,6 +113,9 @@ the same length as constraint. Default is NULL.}
 \item{compactness_metric}{The compactness metric to use when constraining on
 compactness. Default is \code{fryer-holden}, the other implemented option
 is \code{polsby-popper}.}
+
+\item{partisan_metric}{The partisan metric to use when constraining on partisan metrics.
+Only implemented is "efficiency-gap", the default.}
 
 \item{ssd_denom}{The normalizing constant for the sum-of-squared distance Fryer-Holden metric. 
 Default is 1.0 (unnormalized).}
@@ -148,6 +158,17 @@ Metropolis-Hastings ratio calculation for accept-reject rule. Default is FALSE.}
 
 \item{verbose}{Whether to print initialization statement.
 Default is \code{TRUE}.}
+
+\item{tgt_min}{The majority minority target percent as a decimal. Default is 0.55.}
+
+\item{tgt_other}{The remaining target percent as a decimal. Default is 0.25.}
+
+\item{rvote}{integer vector of votes for Republicans by precinct}
+
+\item{dvote}{integer vector of votes for Democrats by precinct}
+
+\item{minorityprop}{numeric vector of targeted minority proportions for the top 
+districts with that proportion}
 }
 \value{
 \code{redist.mcmc} returns an object of class "redist". The object
@@ -171,8 +192,14 @@ constraint for each accepted redistricting plan.}
 constraint for each accepted redistricting plan.}
 \item{constraint_segregation}{A vector containing the value of the
 segregation constraint for each accepted redistricting plan.}
+\item{constraint_vra}{A vector containing the value of the
+vra constraint for each accepted redistricting plan.}
 \item{constraint_similar}{A vector containing the value of the similarity
 constraint for each accepted redistricting plan.}
+\item{constraint_partisan}{A vector containing the value of the
+partisan constraint for each accepted redistricting plan.}
+\item{constraint_minority}{A vector containing the value of the
+minority constraint for each accepted redistricting plan.}
 \item{beta_sequence}{A vector containing the value of beta for each iteration
 of the algorithm. Returned when tempering is being used.}
 \item{mhdecisions_beta}{A vector specifying whether a proposed beta value was

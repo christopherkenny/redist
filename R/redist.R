@@ -34,16 +34,6 @@ combine.par.anneal <- function(a, b){
 #' \code{redist.mcmc.anneal} simulates congressional redistricting plans
 #' using Markov chain Monte Carlo methods coupled with simulated annealing.
 #'
-#' @usage redist.mcmc.anneal(adjobj, popvec, ndists,
-#' initcds, num_hot_steps, num_annealing_steps,
-#' num_cold_steps,
-#' eprob, lambda, popcons, grouppopvec,
-#' areasvec, countymembership, borderlength_mat,
-#' ssdmat, constraint, constraintweights,
-#' compactness_metric, rngseed, maxiterrsg,
-#' adapt_lambda, adapt_eprob,
-#' contiguitymap, exact_mh,
-#' savename, verbose, ncores)
 #'
 #' @param adjobj An adjacency matrix, list, or object of class
 #' "SpatialPolygonsDataFrame."
@@ -80,14 +70,17 @@ combine.par.anneal <- function(a, b){
 #' the third column is its distance. Default is \code{NULL}.
 #' @param ssdmat A matrix of squared distances between geographic
 #' units. The default is \code{NULL}.
-#' @param constraint Which constraint to apply. Accepts any combination of \code{compact},
-#' \code{segregation}, \code{population}, \code{similarity}, or \code{none}
+#' @param constraint Which constraint to apply. Accepts any combination of \code{compact}, 
+#' \code{segregation}, \code{vra}, \code{population}, \code{similarity}, \code{partisan},
+#' \code{minority} or \code{none}
 #' (no constraint applied). The default is NULL.
 #' @param constraintweights The weights to apply to each constraint. Should be a vector
 #' the same length as constraint. Default is NULL.
 #' @param compactness_metric The compactness metric to use when constraining on
-#' compactness. Default is \code{fryer-holden}, the other implemented option
-#' is \code{polsby-popper}.
+#' compactness. Default is \code{fryer-holden}, the other implemented options
+#' are \code{polsby-popper} and \code{edges-removed}.
+#' @param partisan_metric The partisan metric to use when constraining on partisan metrics.
+#' Only implemented are "efficiency-gap" (default) and "proportional-representation".
 #' @param rngseed Allows the user to set the seed for the
 #' simulations. Default is \code{NULL}.
 #' @param maxiterrsg Maximum number of iterations for random seed-and-grow
@@ -106,7 +99,13 @@ combine.par.anneal <- function(a, b){
 #' @param verbose Whether to print initialization statement.
 #' Default is \code{TRUE}.
 #' @param ncores The number of cores available to parallelize over. Default is 1.
-#'
+#' @param tgt_min The majority minority target percent as a decimal. Default is 0.55.
+#' @param tgt_other The remaining target percent as a decimal. Default is 0.25.
+#' @param rvote integer vector of votes for Republicans by precinct
+#' @param dvote integer vector of votes for Democrats by precinct
+#' @param minorityprop numeric vector of targeted minority proportions for the top 
+#' districts with that proportion
+#' 
 #' @export
 redist.mcmc.anneal <- function(adjobj, popvec, ndists = NULL,
                                initcds = NULL,
@@ -119,11 +118,13 @@ redist.mcmc.anneal <- function(adjobj, popvec, ndists = NULL,
                                ssdmat = NULL,
                                constraint = NULL, constraintweights = NULL,
                                compactness_metric = "fryer-holden",
+                               partisan_metric = "efficiency-gap",
                                rngseed = NULL, maxiterrsg = 5000,
                                adapt_lambda = FALSE, adapt_eprob = FALSE,
                                contiguitymap = "rooks", exact_mh = FALSE,
                                savename = NULL, verbose = TRUE,
-                               ncores = 1){
+                               ncores = 1, tgt_min = 0.55, tgt_other = 0.25, rvote = NULL,
+                               dvote = NULL, minorityprop = NULL){
     
     if(verbose){
         ## Initialize ##
@@ -154,8 +155,8 @@ redist.mcmc.anneal <- function(adjobj, popvec, ndists = NULL,
     if(!is.null(constraint) & is.null(constraintweights)){
         stop("Please provide a weight value in 'constraintweights' for each constraint specified in 'constraint'.")
     }
-    if(!(compactness_metric %in% c("fryer-holden", "polsby-popper"))){
-        stop("We only support either 'fryer-holden' or 'polsby-popper' as compactness metrics.")
+    if(!(compactness_metric %in% c("fryer-holden", "polsby-popper", "edges-removed"))){
+        stop("We only support 'fryer-holden', 'polsby-popper', or 'edges-removed' as compactness metrics.")
     }
     
     ## Set seed before first iteration of algorithm if provided by user
@@ -198,14 +199,24 @@ redist.mcmc.anneal <- function(adjobj, popvec, ndists = NULL,
                                  betaseq = "powerlaw", betaseqlength = 10,
                                  betaweights = NULL,
                                  adjswaps = TRUE, maxiterrsg = maxiterrsg,
-                                 contiguitymap = contiguitymap)
+                                 contiguitymap = contiguitymap,
+                                 tgt_min = tgt_min,
+                                 tgt_other = tgt_other,
+                                 rvote = rvote,
+                                 dvote = dvote, 
+                                 minorityprop = minorityprop,
+                                 partisan_metric = partisan_metric)
+    
     
     ## Set betas - if tempering, modified later
     weightpop <- preprocout$params$weightpop
     weightcompact <- preprocout$params$weightcompact
     weightseg <- preprocout$params$weightseg
+    weightvra <- preprocout$params$weightvra
     weightsimilar <- preprocout$params$weightsimilar
     weightcountysplit <- preprocout$params$weightcountysplit
+    weightpartisan <- preprocout$params$weightpartisan
+    weightminority <- preprocout$params$weightminority
     
     cat("Starting swMH().\n")
     algout <- swMH(aList = preprocout$data$adjlist,
@@ -227,14 +238,23 @@ redist.mcmc.anneal <- function(adjobj, popvec, ndists = NULL,
                    weight_population = weightpop,
                    weight_compact = weightcompact,
                    weight_segregation = weightseg,
+                   weight_vra = weightvra,
                    weight_similar = weightsimilar,
                    weight_countysplit = weightcountysplit,
+                   weight_partisan = weightpartisan,
+                   weight_minority = weightminority,
                    adapt_beta = "annealing",
                    adjswap = preprocout$params$adjswaps,
                    exact_mh = exact_mh,
                    adapt_lambda = adapt_lambda,
                    adapt_eprob = adapt_eprob,
                    compactness_measure = compactness_metric,
+                   partisan_measure = preprocout$params$partisan_metricpartisan_metric,
+                   tgt_min = tgt_min,
+                   tgt_other = tgt_other,
+                   rvote = preprocout$params$rvote,
+                   dvote = preprocout$params$dvote,
+                   minorityprop = preprocout$params$minorityprop,
                    num_hot_steps = num_hot_steps,
                    num_annealing_steps = num_annealing_steps,
                    num_cold_steps = num_cold_steps)
@@ -326,11 +346,15 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
                            areasvec = NULL,
                            borderlength_mat = NULL, ssdmat = NULL,
                            compactness_metric = NULL,
+                           partisan_metric = NULL,
                            temper = NULL, constraint = NULL,
                            constraintweights = NULL,
                            betaseq = NULL, betaseqlength = NULL,
                            betaweights = NULL, adjswaps = TRUE, maxiterrsg = NULL,
-                           contiguitymap = "rooks"
+                           contiguitymap = "rooks", tgt_min = 0.55, tgt_other = 0.25,
+                           rvote,
+                           dvote, 
+                           minorityprop = NULL
 ){
     
     #########################
@@ -343,7 +367,7 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
     ## popcons - strength of hard population constraint. Defaulted to no
     ##           constraint. popcons = 0.01 implies a 1% population constraint.
     ## grouppopvec - vector of populations for a minority group. To be used
-    ##               in conjunction with the segregation M-H constraint
+    ##               in conjunction with the segregation and vra M-H constraints
     ## ssdmat - matrix of squared distances between population units.
     ##          To be used when applying the compactness constraint.
     ## beta - target strength of constraint in MH ratio. Defaults to 0.
@@ -359,7 +383,12 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
     ##            parallel tempering. Default to TRUE
     ## maxiterrsg - Maximum number of iterations for RSG algorithm
     ## contiguitymap - Distance criteria for adjacency list from input map
-    
+    ## tgt_min - vra constraint larger grouppop decimal
+    ## tgt_other - vra constraint smaller grouppop decimal
+    ## rvote - republican (or Party A) votes by precinct
+    ## dvote - democratic (or Party B!=A) votes by precinct
+    ## partisan_metric - either efficiency-gap or proportional-representation
+    ##
     #######################
     ## Check missingness ##
     #######################
@@ -373,8 +402,9 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
         if((any(constraintweights == 0) & !is.null(constraint))){
             stop("If applying constraints or using simulated tempering, please set non-zero constraint by specifying the 'constraintweight' argument, and specify the names of the constraints in 'constraint'.")
         }
-        if(any(!(constraint %in% c("compact", "segregation", "population", "similarity", "countysplit")))){
-            stop("Please specify any combination of `compact`, `segregation`, `population`, `countysplit`, or `similarity` for constraint")
+        if(any(!(constraint %in% c("compact", "vra", "segregation", "population", 
+                                   "similarity", "countysplit", "partisan", "minority")))){
+            stop("Please specify any combination of `compact`, `segregation`, vra`, `population`, `countysplit`, `similarity`, `partisan`, or `minority` for constraint")
         }
     }
     
@@ -427,7 +457,7 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
             queens <- ifelse(contiguitymap == "rooks", FALSE, TRUE)
             
             ## Convert shp object to adjacency list
-            adjlist <- poly2nb(adjobj, queen = queens)
+            adjlist <- redist.adjacency(st_as_sf(adjobj))
             
             ## Zero-index list
             for(i in 1:length(adjlist)){
@@ -442,6 +472,8 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
                  Polygons shp file")
         }
         
+    }else if('sf' %in% class(adjobj)){
+        adjlist <- redist.adjacency(adjobj)
     }else{
         
         ## Rename adjacency object as list
@@ -514,7 +546,6 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
                               maxiter = maxiterrsg)
         ## Get initial cds
         initcds <- initout$district_membership
-        
     }
     
     ###########################################################
@@ -532,6 +563,10 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
         stop("If applying the segregation constraint, please provide a vector
              of subgroup populations")
     }
+    if("vra" %in% constraint & is.null(grouppopvec)){
+        stop("If applying the vra constraint, please provide a vector
+             of subgroup populations")
+    }
     if("countysplit" %in% constraint & is.null(countymembership)){
         stop("If applying the county split constraint, please provide a numeric vector indicating county membership.")
     }
@@ -542,10 +577,60 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
               list must have corresponding entry in vector of group populations")
         }
     }
+    if("vra" %in% constraint & !(is.null(grouppopvec))){
+        if((length(grouppopvec) != length(adjlist)) |
+           (sum(is.na(grouppopvec)) > 0)){
+            stop("If applying the vra constraint, each entry in adjacency
+              list must have corresponding entry in vector of group populations")
+        }
+    }
     if("countysplit" %in% constraint & !is.null(countymembership)){
         if(length(countymembership) != length(adjlist) | sum(is.na(countymembership)) > 0){
             stop("You do not have a county membership assigned for every unit.")
         }
+    }
+    
+    if("partisan" %in% constraint){
+        if(is.null(rvote)){
+            stop('You must provide an integer vector to rvote when using partisan constraint.')
+        }
+        if(is.null(dvote)){
+            stop('You must provide an integer vector to rvote when using partisan constraint.')
+        }
+        if(length(rvote) != length(adjlist)){
+            stop("dvote must be an integer vector with corresponding entry for each entry in adjacency list") 
+        }
+        if(length(dvote) != length(adjlist)){
+            stop("dvote must be an integer vector with corresponding entry for each entry in adjacency list")
+        }
+        if(!'integer' %in% class(rvote)){
+            stop('rvote must be an integer vector.')
+        }
+        if(!'integer' %in% class(dvote)){
+            stop('dvote must be an integer vector.')
+        }
+        if(is.null(partisan_metric)){
+            # defaults to efficiency-gap
+            partisan_metric <- 'efficiency-gap'
+        } else{
+            if(!partisan_metric %in% c("efficiency-gap", "proportional-representation")){
+                stop("partisan_metric is only implemented for choices efficiency-gap and proportional-representation.")
+            }
+        }
+    } else{
+        rvote <- c(0L,1L)
+        dvote <- c(1L,0L)
+    }
+    
+    if("minority" %in% constraint){
+        if(!"numeric" %in% class(minorityprop)){
+            stop('"minorityprop" must be of type numeric.')
+        }
+        if(length(minorityprop) > ndists){
+            stop('"minorityprop" has more entries than there will be districts.')
+        }
+    } else {
+        minorityprop = 0 #init so it won't get mad in swMH input
     }
     
     ####################
@@ -556,6 +641,24 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
     }
     if(length(unique(initcds)) != (max(initcds) + 1)){
         stop("Need congressional assignment ids to be sequence increasing by 1")
+    }
+    
+    ## ------------------------------------
+    ## Check VRA targets if necessary
+    ## ------------------------------------
+    if("vra" %in% constraint){
+        if(! 'numeric' %in% class(tgt_min)){
+            stop("Need tgt_min to be numeric.")
+        }
+        if(! 'numeric' %in% class(tgt_other)){
+            stop("Need tgt_other to be numeric.")
+        }
+        if(tgt_min < 0 | tgt_min > 1){
+            stop("Need 0 <= tgt_min <= 1.")
+        }
+        if(tgt_other < 0 | tgt_other > 1){
+            stop("Need 0 <= tgt_other <= 1.")
+        }
     }
     
     ####################################################
@@ -615,6 +718,7 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
         
     }
     
+    
     ########################
     ## Set up constraints ##
     ########################
@@ -636,6 +740,11 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
     }else{
         weightseg <- 0
     }
+    if("vra" %in% constraint){
+        weightvra <- constraintweights[which(constraint == "vra")]
+    }else{
+        weightvra <- 0
+    }
     if("similarity" %in% constraint){
         weightsimilar <- constraintweights[which(constraint == "similarity")]
     }else{
@@ -645,6 +754,16 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
         weightcountysplit <- constraintweights[which(constraint == "countysplit")]
     }else{
         weightcountysplit <- 0
+    }
+    if("partisan" %in% constraint){
+        weightpartisan <- constraintweights[which(constraint == "partisan")]
+    }else{
+        weightpartisan <- 0
+    }
+    if("minority" %in% constraint){
+        weightminority <- constraintweights[which(constraint == "minority")]
+    }else{
+        weightminority <- 0
     }
     
     ###################################
@@ -705,8 +824,17 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
             weightpop = weightpop,
             weightcompact = weightcompact,
             weightseg = weightseg,
+            weightvra = weightvra,
             weightsimilar = weightsimilar,
-            weightcountysplit = weightcountysplit
+            weightcountysplit = weightcountysplit, 
+            weightpartisan = weightpartisan,
+            weightminority = weightminority,
+            tgt_min = tgt_min,
+            tgt_other = tgt_other,
+            rvote = rvote,
+            dvote = dvote,
+            partisan_metric = partisan_metric,
+            minorityprop = minorityprop
         )
     )
     
@@ -754,8 +882,14 @@ redist.preproc <- function(adjobj, popvec, initcds = NULL, ndists = NULL,
 #' constraint for each accepted redistricting plan.}
 #' \item{constraint_segregation}{A vector containing the value of the
 #' segregation constraint for each accepted redistricting plan.}
+#' \item{constraint_vra}{A vector containing the value of the
+#' vra constraint for each accepted redistricting plan.}
 #' \item{constraint_similar}{A vector containing the value of the similarity
 #' constraint for each accepted redistricting plan.}
+#' \item{constraint_partisan}{A vector containing the value of the
+#' partisan constraint for each accepted redistricting plan.}
+#' \item{constraint_minority}{A vector containing the value of the
+#' minority constraint for each accepted redistricting plan.}
 #' \item{beta_sequence}{A vector containing the value of beta for each iteration
 #' of the algorithm. Returned when tempering is being used.}
 #' \item{mhdecisions_beta}{A vector specifying whether a proposed beta value was
@@ -903,13 +1037,16 @@ redist.combine <- function(savename, nloop, nthin, temper = 0){
 #' units. The default is \code{NULL}.
 #' @param temper Whether to use simulated tempering algorithm. Default is FALSE.
 #' @param constraint Which constraint to apply. Accepts any combination of \code{compact},
-#' \code{segregation}, \code{population}, \code{similarity}, or \code{none}
+#' \code{segregation}, \code{vra}, \code{population}, \code{similarity}, \code{partisan}, 
+#' \code{minority} or \code{none}
 #' (no constraint applied). The default is NULL.
 #' @param constraintweights The weights to apply to each constraint. Should be a vector
 #' the same length as constraint. Default is NULL.
 #' @param compactness_metric The compactness metric to use when constraining on
 #' compactness. Default is \code{fryer-holden}, the other implemented option
 #' is \code{polsby-popper}.
+#' @param partisan_metric The partisan metric to use when constraining on partisan metrics.
+#' Only implemented is "efficiency-gap", the default.
 #' @param ssd_denom The normalizing constant for the sum-of-squared distance Fryer-Holden metric. 
 #' Default is 1.0 (unnormalized).
 #' @param betaseq Sequence of beta values for tempering. The default is
@@ -939,6 +1076,12 @@ redist.combine <- function(savename, nloop, nthin, temper = 0){
 #' @param savename Filename to save simulations. Default is \code{NULL}.
 #' @param verbose Whether to print initialization statement.
 #' Default is \code{TRUE}.
+#' @param tgt_min The majority minority target percent as a decimal. Default is 0.55.
+#' @param tgt_other The remaining target percent as a decimal. Default is 0.25.
+#' @param rvote integer vector of votes for Republicans by precinct
+#' @param dvote integer vector of votes for Democrats by precinct
+#' @param minorityprop numeric vector of targeted minority proportions for the top 
+#' districts with that proportion
 #'
 #' @details This function allows users to simulate redistricting plans
 #' using Markov Chain Monte Carlo methods. Several constraints
@@ -969,8 +1112,14 @@ redist.combine <- function(savename, nloop, nthin, temper = 0){
 #' constraint for each accepted redistricting plan.}
 #' \item{constraint_segregation}{A vector containing the value of the
 #' segregation constraint for each accepted redistricting plan.}
+#' \item{constraint_vra}{A vector containing the value of the
+#' vra constraint for each accepted redistricting plan.}
 #' \item{constraint_similar}{A vector containing the value of the similarity
 #' constraint for each accepted redistricting plan.}
+#' \item{constraint_partisan}{A vector containing the value of the
+#' partisan constraint for each accepted redistricting plan.}
+#' \item{constraint_minority}{A vector containing the value of the
+#' minority constraint for each accepted redistricting plan.}
 #' \item{beta_sequence}{A vector containing the value of beta for each iteration
 #' of the algorithm. Returned when tempering is being used.}
 #' \item{mhdecisions_beta}{A vector specifying whether a proposed beta value was
@@ -979,6 +1128,7 @@ redist.combine <- function(savename, nloop, nthin, temper = 0){
 #' \item{mhprob_beta}{A vector containing the Metropolis-Hastings acceptance
 #' probability for each iteration of the algorithm. Returned when tempering
 #' is being used.}
+#' 
 #'
 #' @references Fifield, Benjamin, Michael Higgins, Kosuke Imai and Alexander
 #' Tarr. (2016) "A New Automated Redistricting Simulator Using Markov Chain Monte
@@ -1009,15 +1159,17 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
                         borderlength_mat = NULL, ssdmat = NULL, temper = FALSE,
                         constraint = NULL, constraintweights = NULL,
                         compactness_metric = "fryer-holden",
+                        partisan_metric = "efficiency-gap",
                         ssd_denom = 1.0,
                         betaseq = "powerlaw", betaseqlength = 10,
                         betaweights = NULL, 
                         adjswaps = TRUE, rngseed = NULL, maxiterrsg = 5000,
                         adapt_lambda = FALSE, adapt_eprob = FALSE,
                         contiguitymap = "rooks", exact_mh = FALSE, savename = NULL,
-                        verbose = TRUE
+                        verbose = TRUE, tgt_min = 0.55, tgt_other = 0.25,
+                        rvote = NULL, dvote = NULL, minorityprop = NULL
 ){
-    
+
     if(verbose){
         ## Initialize ##
         divider <- c(paste(rep("=", 20), sep = "", collapse = ""), "\n")
@@ -1053,8 +1205,8 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
     if(!is.null(constraint) & is.null(constraintweights)){
         stop("Please provide a weight value in 'constraintweights' for each constraint specified in 'constraint'.")
     }
-    if(!(compactness_metric %in% c("fryer-holden", "polsby-popper"))){
-        stop("We only support either 'fryer-holden' or 'polsby-popper' as compactness metrics.")
+    if(!(compactness_metric %in% c("fryer-holden", "polsby-popper", 'edges-removed'))){
+        stop("We only support 'fryer-holden', 'polsby-popper', or 'edges-removed' as compactness metrics.")
     }
     
     ## Set seed before first iteration of algorithm if provided by user
@@ -1091,19 +1243,29 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
                                  borderlength_mat = borderlength_mat,
                                  ssdmat = ssdmat,
                                  compactness_metric = compactness_metric,
+                                 partisan_metric = partisan_metric,
                                  temper = temper,
                                  constraint = constraint, constraintweights = constraintweights,
                                  betaseq = betaseq, betaseqlength = betaseqlength,
                                  betaweights = betaweights,
                                  adjswaps = adjswaps, maxiterrsg = maxiterrsg,
-                                 contiguitymap = contiguitymap)
+                                 contiguitymap = contiguitymap, 
+                                 tgt_min = tgt_min,
+                                 tgt_other = tgt_other,
+                                 rvote = rvote,
+                                 dvote = dvote,
+                                 minorityprop = minorityprop
+                                 )
     
     ## Set betas - if tempering, modified later
     weightpop <- preprocout$params$weightpop
     weightcompact <- preprocout$params$weightcompact
     weightseg <- preprocout$params$weightseg
+    weightvra <- preprocout$params$weightvra
     weightsimilar <- preprocout$params$weightsimilar
     weightcountysplit <- preprocout$params$weightcountysplit
+    weightpartisan <- preprocout$params$weightpartisan
+    weightminority <- preprocout$params$weightminority
     
     ## Get starting loop value
     loopstart <- loopscompleted + 1
@@ -1159,7 +1321,7 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
             }
             
         }        
-        
+
         ## Run algorithm
         algout <- swMH(aList = preprocout$data$adjlist,
                        cdvec = cds,
@@ -1180,16 +1342,25 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
                        weight_population = weightpop,
                        weight_compact = weightcompact,
                        weight_segregation = weightseg,
+                       weight_vra = weightvra,
                        weight_similar = weightsimilar,
                        weight_countysplit = weightcountysplit,
+                       weight_partisan = weightpartisan,
+                       weight_minority = weightminority,
                        adapt_beta = preprocout$params$temperbeta,
                        adjswap = preprocout$params$adjswaps,
                        exact_mh = exact_mh,
                        adapt_lambda = adapt_lambda,
                        adapt_eprob = adapt_eprob,
                        compactness_measure = compactness_metric,
-                       ssd_denom = ssd_denom)
-        
+                       partisan_measure = preprocout$params$partisan_metric,
+                       ssd_denom = ssd_denom,
+                       tgt_min = tgt_min,
+                       tgt_other = tgt_other, 
+                       rvote = preprocout$params$rvote,
+                       dvote = preprocout$params$dvote,
+                       minorityprop = preprocout$params$minorityprop)
+
         class(algout) <- "redist"
         
         ## Save random number state if setting the seed
@@ -1235,12 +1406,19 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
 #' population parity, geographic compactness, or other constraints are
 #' implemented.
 #'
-#' @usage redist.ipw(algout, targetpop = NULL)
+#' @usage redist.ipw(algout,
+#' resampleconstraint = c("pop", "compact", "segregation", "similar"),
+#' targetbeta, targetpop = NULL, temper = 0)
 #'
 #' @param algout An object of class "redist".
+#' @param resampleconstraint The constraint implemented in the simulations: one
+#' of "pop", "compact", "segregation", or "similar".
+#' @param targetbeta The target value of the constraint.
 #' @param targetpop The desired level of population parity. \code{targetpop} =
 #' 0.01 means that the desired distance from population parity is 1\%. The
 #' default is \code{NULL}.
+#' @param temper A flag for whether simulated tempering was used to improve the
+#' mixing of the Markov Chain. The default is \code{1}.
 #'
 #' @details This function allows users to resample redistricting plans using
 #' inverse probability weighting techniques described in Rubin (1987). This
@@ -1270,6 +1448,12 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
 #' segregation constraint for each accepted redistricting plan.}
 #' \item{constraint_similar}{A vector containing the value of the similarity
 #' constraint for each accepted redistricting plan.}
+#' \item{constraint_vra}{A vector containing the value of the
+#' vra constraint for each accepted redistricting plan.}
+#' \item{constraint_partisan}{A vector containing the value of the
+#' partisan constraint for each accepted redistricting plan.}
+#' \item{constraint_minority}{A vector containing the value of the
+#' minority constraint for each accepted redistricting plan.}
 #' \item{beta_sequence}{A vector containing the value of beta for each iteration
 #' of the algorithm. Returned when tempering is being used.}
 #' \item{mhdecisions_beta}{A vector specifying whether a proposed beta value was
@@ -1305,24 +1489,46 @@ redist.mcmc <- function(adjobj, popvec, nsims, ndists = NULL, initcds = NULL,
 #' ## Run simulations - tempering population constraint
 #' alg_253_20_st <- redist.mcmc(adjobj = algdat.p20$adjlist,
 #' popvec = algdat.p20$precinct.data$pop,
-#' initcds = initcds, nsims = 10000, betapop = -5.4,
-#' betaweights = betaweights, temperbetapop = 1)
+#' initcds = initcds, nsims = 10000, constraint = 'population',
+#' constraintweights = 5.4,
+#' betaweights = betaweights, temper = 1)
 #'
 #' ## Resample using inverse probability weighting.
 #' ## Target distance from parity is 20%
-#' alg_253_20_st <- redist.ipw(alg_253_20_st, targetpop = .2)
-#'
+#' alg_253_20_st <- redist.ipw(alg_253_20_st,
+#'    resampleconstraint = "pop",
+#' targetbeta = 1,
+#' targetpop = .2, temper = 1)
 #' }
 #' @export
-redist.ipw <- function(algout, targetpop = NULL){
+redist.ipw <- function(algout,
+                       resampleconstraint = c("pop", "compact",
+                                              "segregation", "similar"),
+                       targetbeta,
+                       targetpop = NULL,
+                       temper = 0)
+{
     
     ## Warnings:
-    if(!inherits(algout, "redist")){
+    if(missing(algout) | class(algout) != "redist"){
         stop("Please provide a proper redist object")
+    }
+    if(length(resampleconstraint)!=1){
+        stop("We currently only support one resamplingconstraint at a time.")
+    }
+    if(!(resampleconstraint %in% c("pop", "compact", "segregation", "similar"))){
+        stop("We do not provide support for that constraint at this time")
+    }
+    if(missing(targetbeta)){
+        stop("Please specify the target beta value")
     }
     
     ## Get indices drawn under target beta if tempering
-    indbeta <- which(algout$beta_sequence == 1)
+    if(temper == 1){
+        indbeta <- which(algout$beta_sequence == targetbeta)
+    }else{
+        indbeta <- 1:ncol(algout$partitions)
+    }
     
     ## Get indices of draws that meet target population
     if(!is.null(targetpop)){
@@ -1333,10 +1539,9 @@ redist.ipw <- function(algout, targetpop = NULL){
     
     ## Get intersection of indices
     inds <- intersect(indpop, indbeta)
-    
     ## Construct weights
-    psi <- algout[["energy_psi"]][inds]
-    weights <- 1 / exp(-1 * psi)
+    psi <- algout[[paste("constraint_", resampleconstraint, sep = "")]][inds]
+    weights <- 1 / exp(targetbeta * psi)
     
     ## Resample indices
     inds <- sample(inds, length(inds), replace = TRUE, prob = weights)
@@ -1378,6 +1583,12 @@ as.matrix.redist = function(x, ...) {
 #' @importFrom utils str
 #' @export
 print.redist = function(x, ...) {
+    if('partitions' %in% names(x)){
+        cat(ncol(x$partitions), 'sampled plans with', length(unique(x$partitions[,1])), 'districts from a',
+            nrow(x$partitions), 'unit map, drawn\n using',
+            'Markov chain Monte Carlo')
+        
+    } else{
     cat(x$nsims, " sampled plans with ", max(x$cdvec[,1]), " districts from a ",
         length(x$aList), "-unit map, drawn\n using ",
         c(mcmc="Markov chain Monte Carlo",
@@ -1387,4 +1598,5 @@ print.redist = function(x, ...) {
     else
         cat(".\n")
     cat(str(x$cdvec))
+    }
 }
