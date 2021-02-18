@@ -99,7 +99,7 @@ Michael Higgins, Department of Statistics, Kansas State University
 \url{http://www-personal.k-state.edu/~mikehiggins/}
 
 Kosuke Imai, Department of Politics, Princeton University
-\email{imai@harvard.edu}, \url{http://imai.princeton.edu}
+\email{imai@harvard.edu}, \url{http://imai.fas.harvard.edu}
 
 James Lo, \email{jameslo@princeton.edu}
 
